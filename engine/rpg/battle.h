@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <functional>
+#include <string>
 
 namespace MoLin::RPG {
 
@@ -17,7 +19,6 @@ public:
     std::string name;
     BattleStats stats;
     virtual ~BattleEntity() = default;
-    // 技能等由子类实现
 };
 
 class BattleCommand {
@@ -35,5 +36,7 @@ public:
     virtual void ExecuteCommand(int actorIndex, const BattleCommand& cmd) = 0;
     virtual bool IsBattleOver() = 0;
 };
+
+std::shared_ptr<BattleSystem> CreateBattleSystem();
 
 } // namespace MoLin::RPG

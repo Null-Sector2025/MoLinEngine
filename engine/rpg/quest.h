@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <memory>
 #include <functional>
+#include <unordered_map>
 
 namespace MoLin::RPG {
 
@@ -37,5 +39,7 @@ public:
     virtual void StartQuest(const std::string& id) = 0;
     virtual void UpdateObjective(const std::string& questId, int objIndex, int progress) = 0;
 };
+
+std::shared_ptr<QuestManager> CreateQuestManager();
 
 } // namespace MoLin::RPG

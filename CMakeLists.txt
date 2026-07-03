@@ -7,17 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
-find_package(SDL2_ttf REQUIRED)   # 新增
 find_package(Lua REQUIRED)
 
 set(ENGINE_SOURCES
     engine/core/engine.cpp
-    engine/core/event_system.cpp
-    engine/core/save_system.cpp
-    engine/core/json.cpp
+    engine/core/config.cpp
+    engine/core/timer.cpp
     engine/scene/scene.cpp
     engine/input/input.cpp
     engine/script/lua_bind.cpp
+    engine/script/lua_api.cpp
     engine/resource/resource_manager.cpp
     engine/graphics/sprite.cpp
     engine/graphics/camera.cpp
@@ -25,10 +24,18 @@ set(ENGINE_SOURCES
     engine/graphics/animation.cpp
     engine/graphics/animated_sprite.cpp
     engine/graphics/particle_system.cpp
-    engine/graphics/text_renderer.cpp
     engine/audio/audio_player.cpp
     engine/ui/ui_button.cpp
+    engine/crypto/simple_crypto.cpp
+    engine/save/save_manager.cpp
+    engine/game/game_state.cpp
     engine/rpg/character.cpp
+    engine/rpg/inventory.cpp
+    engine/rpg/npc.cpp
+    engine/rpg/dialogue.cpp
+    engine/rpg/quest.cpp
+    engine/rpg/battle.cpp
+    engine/rpg/event_system.cpp
 )
 
 add_library(MoLinEngine STATIC ${ENGINE_SOURCES})
@@ -38,15 +45,13 @@ target_include_directories(MoLinEngine PUBLIC
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    ${SDL2_TTF_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIR}
+    ${LUA_INCLUDE_DIR}          
 )
 
 target_link_libraries(MoLinEngine
     ${SDL2_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
     ${LUA_LIBRARIES}
 )
 

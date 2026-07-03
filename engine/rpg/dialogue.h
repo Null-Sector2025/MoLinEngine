@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace MoLin::RPG {
 
@@ -12,11 +13,11 @@ struct DialogueLine {
 class DialogueManager {
 public:
     virtual ~DialogueManager() = default;
-
-    // 由游戏实现，引擎只提供接口
     virtual void StartDialogue(const std::vector<DialogueLine>& lines) = 0;
     virtual void ShowNextLine() = 0;
     virtual bool IsActive() const = 0;
 };
+
+std::shared_ptr<DialogueManager> CreateDialogueManager();
 
 } // namespace MoLin::RPG
