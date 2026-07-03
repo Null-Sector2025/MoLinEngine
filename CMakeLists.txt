@@ -33,7 +33,7 @@ target_include_directories(MoLinEngine PUBLIC
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIR}          # 修正为单数变量
 )
 
 target_link_libraries(MoLinEngine
