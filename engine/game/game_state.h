@@ -8,15 +8,15 @@
 namespace MoLin {
 
 struct PlayerState {
-    std::string sceneId;
-    float posX, posY;
+    std::string sceneId = "default";
+    float posX = 0.0f, posY = 0.0f;
     int level = 1;
     int hp = 100, maxHp = 100;
     int mp = 50, maxMp = 50;
-    // 物品 ID -> 数量
-    std::unordered_map<std::string, int> inventory;
-    // 任务 ID -> 状态 (0=未激活,1=进行中,2=完成)
-    std::unordered_map<std::string, int> quests;
+    int exp = 0;
+    std::unordered_map<std::string, int> inventory; // 物品ID → 数量
+    std::unordered_map<std::string, int> quests;    // 任务ID → 状态(0未激活,1进行中,2完成)
+    std::unordered_map<std::string, std::string> flags; // 全局标记
 };
 
 class GameState {
@@ -31,6 +31,7 @@ public:
 
     bool Save(int slot = 1);
     bool Load(int slot = 1);
+    bool DeleteSave(int slot);
 
 private:
     GameState() = default;
@@ -40,6 +41,14 @@ private:
     std::string GetSlotPath(int slot) const;
     void Serialize(std::vector<uint8_t>& buffer) const;
     bool Deserialize(const std::vector<uint8_t>& buffer);
+
+    // 序列化辅助函数
+    static void WriteInt(std::vector<uint8_t>& buf, int32_t val);
+    static void WriteFloat(std::vector<uint8_t>& buf, float val);
+    static void WriteString(std::vector<uint8_t>& buf, const std::string& s);
+    static int32_t ReadInt(const std::vector<uint8_t>& buf, size_t& offset);
+    static float ReadFloat(const std::vector<uint8_t>& buf, size_t& offset);
+    static std::string ReadString(const std::vector<uint8_t>& buf, size_t& offset);
 };
 
 } // namespace MoLin

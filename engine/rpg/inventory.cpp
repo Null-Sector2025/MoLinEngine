@@ -1,5 +1,6 @@
 #include "inventory.h"
 #include <iostream>
+#include <algorithm>
 
 namespace MoLin::RPG {
 
@@ -32,8 +33,12 @@ bool Inventory::HasItem(const std::string& itemId, int count) const {
     return GetItemCount(itemId) >= count;
 }
 
-void Inventory::Clear() {
-    m_Items.clear();
+void Inventory::Clear() { m_Items.clear(); }
+
+std::vector<std::pair<std::string, int>> Inventory::GetAllItems() const {
+    std::vector<std::pair<std::string, int>> items;
+    for (auto& [id, cnt] : m_Items) items.emplace_back(id, cnt);
+    return items;
 }
 
 void Inventory::RegisterItem(const Item& item) {

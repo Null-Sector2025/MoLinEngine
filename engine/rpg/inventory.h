@@ -1,14 +1,23 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <functional>
 
 namespace MoLin::RPG {
+
+enum class ItemType { Consumable, Weapon, Armor, KeyItem, Misc };
 
 struct Item {
     std::string id;
     std::string name;
     std::string description;
+    ItemType type = ItemType::Misc;
     int maxStack = 99;
+    int buyPrice = 0;
+    int sellPrice = 0;
+    // 使用效果回调
+    std::function<void(class Character&)> onUse;
 };
 
 class Inventory {
@@ -18,8 +27,8 @@ public:
     int GetItemCount(const std::string& itemId) const;
     bool HasItem(const std::string& itemId, int count = 1) const;
     void Clear();
+    std::vector<std::pair<std::string, int>> GetAllItems() const;
 
-    // 静态物品数据库（引擎使用者需注册物品原型）
     static void RegisterItem(const Item& item);
     static const Item* GetItemPrototype(const std::string& id);
 

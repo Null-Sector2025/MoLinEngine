@@ -45,7 +45,7 @@ target_include_directories(MoLinEngine PUBLIC
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIR}          
+    ${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(MoLinEngine

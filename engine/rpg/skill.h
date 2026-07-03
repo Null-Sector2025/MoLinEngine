@@ -7,11 +7,13 @@ namespace MoLin::RPG {
 class Skill {
 public:
     std::string name;
+    std::string description;
     int mpCost = 0;
     int power = 0;
-    std::string description;
+    int level = 1;
+    int maxLevel = 10;
 
-    using SkillEffect = std::function<void(class BattleEntity& user, class BattleEntity& target)>;
+    using SkillEffect = std::function<void(class Character& user, class Character& target)>;
     SkillEffect onUse;
 };
 
