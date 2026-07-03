@@ -14,29 +14,19 @@ LuaBind::LuaBind() {
     luaL_openlibs(L);
     RegisterCoreFunctions();
 }
-
-LuaBind::~LuaBind() {
-    if (L) lua_close(L);
-}
-
-void LuaBind::RegisterCoreFunctions() {
-    lua_register(L, "Log", Lua_Log);
-}
-
+LuaBind::~LuaBind() { if (L) lua_close(L); }
+void LuaBind::RegisterCoreFunctions() { lua_register(L, "Log", Lua_Log); }
 bool LuaBind::DoFile(const std::string& filename) {
     if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
         std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
-        lua_pop(L, 1);
-        return false;
+        lua_pop(L, 1); return false;
     }
     return true;
 }
-
 bool LuaBind::DoString(const std::string& code) {
     if (luaL_dostring(L, code.c_str()) != LUA_OK) {
         std::cerr << "Lua error: " << lua_tostring(L, -1) << std::endl;
-        lua_pop(L, 1);
-        return false;
+        lua_pop(L, 1); return false;
     }
     return true;
 }

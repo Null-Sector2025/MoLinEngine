@@ -49,27 +49,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Clone vcpkg
-        run: |
-          git clone --depth 1 https://github.com/Microsoft/vcpkg.git vcpkg
-          ./vcpkg/bootstrap-vcpkg.sh
-      - name: Install ARM64 cross-compile deps
+      - name: Install cross compiler
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      - name: Install ARM64 libraries via vcpkg
+      - name: Install x86_64 headers (for SDL2/Lua)
         run: |
-          ./vcpkg/vcpkg install sdl2:arm64-linux sdl2-image:arm64-linux sdl2-mixer:arm64-linux lua:arm64-linux --triplet arm64-linux
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+      - name: Create CMake toolchain file for ARM64
+        run: |
+          cat > arm64-toolchain.cmake << 'ENDTOOLCHAIN'
+          set(CMAKE_SYSTEM_NAME Linux)
+          set(CMAKE_SYSTEM_PROCESSOR aarch64)
+          set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+          set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+          set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+          set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+          set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+          set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+          set(CMAKE_FIND_ROOT_PATH /usr/aarch64-linux-gnu)
+          ENDTOOLCHAIN
       - name: Configure for ARM64
         run: |
           cmake -B build-arm64 \
-            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DVCPKG_TARGET_TRIPLET=arm64-linux \
-            -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/toolchains/linux.cmake \
-            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+            -DCMAKE_TOOLCHAIN_FILE=arm64-toolchain.cmake \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=ON
+            -DBUILD_SHARED_LIBS=ON \
+            -DSDL2_DIR=/usr/lib/x86_64-linux-gnu/cmake/SDL2 \
+            -DSDL2_image_DIR=/usr/lib/x86_64-linux-gnu/cmake/SDL2_image \
+            -DSDL2_mixer_DIR=/usr/lib/x86_64-linux-gnu/cmake/SDL2_mixer \
+            -DLUA_DIR=/usr/lib/x86_64-linux-gnu/cmake/lua5.4
       - name: Build
         run: cmake --build build-arm64
       - name: Verify artifact
