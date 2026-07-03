@@ -3,7 +3,6 @@
 
 namespace MoLin {
 
-// 示例：注册一个全局函数 Log
 static int Lua_Log(lua_State* L) {
     const char* msg = lua_tostring(L, 1);
     if (msg) std::cout << "[Lua] " << msg << std::endl;
@@ -22,7 +21,6 @@ LuaBind::~LuaBind() {
 
 void LuaBind::RegisterCoreFunctions() {
     lua_register(L, "Log", Lua_Log);
-    // 后续注册更多引擎 API
 }
 
 bool LuaBind::DoFile(const std::string& filename) {

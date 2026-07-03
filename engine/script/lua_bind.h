@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
-#include <lua5.4/lua.h>
-#include <lua5.4/lualib.h>
-#include <lua5.4/lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
 namespace MoLin {
 
@@ -15,7 +15,6 @@ public:
     bool DoString(const std::string& code);
     lua_State* GetState() { return L; }
 
-    // 暴露给 Lua 的 C++ 函数可在此注册
     void RegisterCoreFunctions();
 
 private:

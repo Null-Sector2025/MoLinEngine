@@ -38,5 +38,12 @@ target_link_libraries(MoLinEngine
     ${LUA_LIBRARIES}
 )
 
+# 兼容不同平台的 Lua 头文件路径
+if(ANDROID)
+    target_include_directories(MoLinEngine PRIVATE ${LUA_INCLUDE_DIR})
+else()
+    target_include_directories(MoLinEngine PRIVATE ${LUA_INCLUDE_DIR})
+endif()
+
 install(TARGETS MoLinEngine ARCHIVE DESTINATION lib)
 install(DIRECTORY engine/ DESTINATION include/MoLinEngine FILES_MATCHING PATTERN "*.h")
