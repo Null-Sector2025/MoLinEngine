@@ -3,6 +3,8 @@ name: Build MoLin Engine
 on:
   push:
     branches: [ main, dev ]
+    tags:
+      - 'v*'          # 推送 v1.0 这类标签时触发
   pull_request:
     branches: [ main ]
 
@@ -13,9 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
@@ -26,35 +26,26 @@ jobs:
           name: MoLinEngine-linux-x64
           path: build/libMoLinEngine.a
 
-  # ========== Android 构建（重写） ==========
+  # ========== Android 构建 ==========
   build-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Android NDK
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r26b
-
       - name: Clone vcpkg
         run: |
           git clone --depth 1 https://github.com/Microsoft/vcpkg.git vcpkg
           ./vcpkg/bootstrap-vcpkg.sh
-
       - name: Install Android dependencies
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           export ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}
-          ./vcpkg/vcpkg install \
-            sdl2 \
-            sdl2-image \
-            sdl2-mixer \
-            lua \
-            --triplet arm64-android
-
+          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer lua --triplet arm64-android
       - name: Configure CMake for Android
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
@@ -68,13 +59,47 @@ jobs:
             -DANDROID_PLATFORM=android-21 \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON
-
       - name: Build Android library
         run: cmake --build build-android
-
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-android-arm64
           path: build-android/libMoLinEngine.so
 
+  # ========== 创建 Release（仅在推送标签时） ==========
+  release:
+    needs: [build-linux, build-android]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MoLinEngine-linux-x64
+          path: dist/linux
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: MoLinEngine-android-arm64
+          path: dist/android
+      - name: Package release assets
+        run: |
+          mkdir -p release-assets/include
+          cp -r engine/* release-assets/include/
+          cp dist/linux/libMoLinEngine.a release-assets/
+          cp dist/android/libMoLinEngine.so release-assets/
+          cd release-assets
+          tar -czvf ../MoLinEngine-linux-x64.tar.gz libMoLinEngine.a include/
+          tar -czvf ../MoLinEngine-android-arm64.tar.gz libMoLinEngine.so include/
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "墨麟引擎 ${{ github.ref_name }}"
+          body: "包含 Linux x64 静态库和 Android arm64-v8a 动态库。"
+          files: |
+            MoLinEngine-linux-x64.tar.gz
+            MoLinEngine-android-arm64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

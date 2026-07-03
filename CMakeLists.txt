@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MoLinEngine VERSION 0.1.0 LANGUAGES CXX)
+project(MoLinEngine VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,8 +17,13 @@ set(ENGINE_SOURCES
     engine/resource/resource_manager.cpp
     engine/graphics/sprite.cpp
     engine/graphics/camera.cpp
+    engine/graphics/tilemap.cpp
+    engine/graphics/animation.cpp
+    engine/graphics/animated_sprite.cpp
+    engine/graphics/particle_system.cpp
     engine/audio/audio_player.cpp
     engine/ui/ui_button.cpp
+    engine/rpg/character.cpp
 )
 
 add_library(MoLinEngine STATIC ${ENGINE_SOURCES})
@@ -37,13 +42,6 @@ target_link_libraries(MoLinEngine
     ${SDL2_MIXER_LIBRARIES}
     ${LUA_LIBRARIES}
 )
-
-# 兼容不同平台的 Lua 头文件路径
-if(ANDROID)
-    target_include_directories(MoLinEngine PRIVATE ${LUA_INCLUDE_DIR})
-else()
-    target_include_directories(MoLinEngine PRIVATE ${LUA_INCLUDE_DIR})
-endif()
 
 install(TARGETS MoLinEngine ARCHIVE DESTINATION lib)
 install(DIRECTORY engine/ DESTINATION include/MoLinEngine FILES_MATCHING PATTERN "*.h")
