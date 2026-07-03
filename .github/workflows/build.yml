@@ -9,30 +9,53 @@ on:
     branches: [ main ]
 
 jobs:
+  # ========== Linux x64 ==========
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install system dependencies
+      - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
-      - name: Configure CMake
+          sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+      - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build
-      - name: Upload Linux artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-linux-x64
           path: build/libMoLinEngine.a
 
+  # ========== Windows x64 ==========
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup vcpkg
+        run: |
+          git clone --depth 1 https://github.com/Microsoft/vcpkg.git C:\vcpkg
+          C:\vcpkg\bootstrap-vcpkg.bat
+      - name: Install deps
+        run: C:\vcpkg\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows lua:x64-windows
+      - name: Configure
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoLinEngine-windows-x64
+          path: build/Release/MoLinEngine.lib
+
+  # ========== Android arm64-v8a ==========
   build-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Android NDK
-        id: setup-ndk
+      - name: Setup NDK
+        id: ndk
         uses: nttld/setup-ndk@v1
         with:
           ndk-version: r26b
@@ -40,65 +63,65 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/Microsoft/vcpkg.git vcpkg
           ./vcpkg/bootstrap-vcpkg.sh
-      - name: Install Android dependencies
+      - name: Install Android deps
         env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
         run: |
-          export ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}
-          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer sdl2-ttf lua --triplet arm64-android
-      - name: Configure CMake for Android
+          export ANDROID_NDK_HOME=${{ steps.ndk.outputs.ndk-path }}
+          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer lua --triplet arm64-android
+      - name: Configure
         env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
         run: |
           cmake -B build-android \
             -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=arm64-android \
             -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/toolchains/android.cmake \
-            -DANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }} \
+            -DANDROID_NDK_HOME=${{ steps.ndk.outputs.ndk-path }} \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-21 \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON
-      - name: Build Android library
+      - name: Build
         run: cmake --build build-android
-      - name: Upload Android artifact
+      - name: Verify artifact exists
+        run: ls -la build-android/libMoLinEngine.so
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-android-arm64
           path: build-android/libMoLinEngine.so
 
+  # ========== Release ==========
   release:
-    needs: [build-linux, build-android]
+    needs: [build-linux, build-windows, build-android]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download Linux artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: MoLinEngine-linux-x64
-          path: dist/linux
-      - name: Download Android artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: MoLinEngine-android-arm64
-          path: dist/android
-      - name: Package release assets
+          path: artifacts
+      - name: Package assets
         run: |
-          mkdir -p release-assets/include
-          cp -r engine/* release-assets/include/
-          cp dist/linux/libMoLinEngine.a release-assets/
-          cp dist/android/libMoLinEngine.so release-assets/
-          cd release-assets
+          mkdir -p dist/include
+          cp -r engine/* dist/include/
+          cp artifacts/MoLinEngine-linux-x64/libMoLinEngine.a dist/
+          cp artifacts/MoLinEngine-windows-x64/MoLinEngine.lib dist/
+          cp artifacts/MoLinEngine-android-arm64/libMoLinEngine.so dist/
+          cd dist
           tar -czvf ../MoLinEngine-linux-x64.tar.gz libMoLinEngine.a include/
           tar -czvf ../MoLinEngine-android-arm64.tar.gz libMoLinEngine.so include/
+          zip -r ../MoLinEngine-windows-x64.zip MoLinEngine.lib include/
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
-          body: "包含 Linux x64 静态库和 Android arm64-v8a 动态库，以及引擎头文件。"
+          body: "包含 Linux x64、Windows x64 静态库和 Android arm64-v8a 动态库。"
           files: |
             MoLinEngine-linux-x64.tar.gz
+            MoLinEngine-windows-x64.zip
             MoLinEngine-android-arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
