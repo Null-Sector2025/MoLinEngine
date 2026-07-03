@@ -49,21 +49,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Enable multiarch
+      - name: Install cross compiler
         run: |
-          sudo dpkg --add-architecture arm64
           sudo apt-get update
-      - name: Install ARM64 cross-compile deps
-        run: |
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          sudo apt-get install -y libsdl2-dev:arm64 libsdl2-image-dev:arm64 libsdl2-mixer-dev:arm64 liblua5.4-dev:arm64 2>/dev/null || echo "Some arm64 deps not in apt, will use pkg-config fallback"
+      - name: Install SDL2 and Lua for x86_64 (for headers)
+        run: |
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
       - name: Configure for ARM64
         run: |
           cmake -B build-arm64 \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=ON
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu
       - name: Build
         run: cmake --build build-arm64
       - name: Verify artifact
@@ -99,7 +102,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
-          body: "包含 Linux x64、Windows x64 静态库和 ARM64（手机/树莓派）动态库。"
+          body: "包含 Linux x64、Windows x64 静态库和 ARM64 动态库。"
           files: |
             MoLinEngine-linux-x64.tar.gz
             MoLinEngine-windows-x64.zip
