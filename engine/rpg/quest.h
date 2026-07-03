@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <functional>
 #include <unordered_map>
 
 namespace MoLin::RPG {
@@ -23,7 +22,6 @@ public:
     std::string description;
     QuestStatus status = QuestStatus::Inactive;
     std::vector<QuestObjective> objectives;
-
     virtual ~Quest() = default;
     virtual void OnActivate() {}
     virtual void OnComplete() {}

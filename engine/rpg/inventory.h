@@ -16,7 +16,6 @@ struct Item {
     int maxStack = 99;
     int buyPrice = 0;
     int sellPrice = 0;
-    // 使用效果回调
     std::function<void(class Character&)> onUse;
 };
 
@@ -28,10 +27,8 @@ public:
     bool HasItem(const std::string& itemId, int count = 1) const;
     void Clear();
     std::vector<std::pair<std::string, int>> GetAllItems() const;
-
     static void RegisterItem(const Item& item);
     static const Item* GetItemPrototype(const std::string& id);
-
 private:
     std::unordered_map<std::string, int> m_Items;
     static std::unordered_map<std::string, Item> s_ItemDB;

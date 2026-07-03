@@ -3,16 +3,11 @@
 
 namespace MoLin {
 
-// ---------- SceneNode ----------
-SceneNode::SceneNode(const std::string& name)
-    : m_Name(name) {}
+SceneNode::SceneNode(const std::string& name) : m_Name(name) {}
 
 void SceneNode::AddChild(SceneNode* child) {
     if (!child) return;
-    // 如果已有父节点，先从旧父节点移除
-    if (child->m_Parent) {
-        child->m_Parent->RemoveChild(child);
-    }
+    if (child->m_Parent) child->m_Parent->RemoveChild(child);
     child->m_Parent = this;
     m_Children.push_back(child);
 }
@@ -27,56 +22,50 @@ void SceneNode::RemoveChild(SceneNode* child) {
 
 Transform SceneNode::GetWorldTransform() const {
     if (m_Parent) {
-        Transform parentWorld = m_Parent->GetWorldTransform();
-        Transform world = m_Transform;
-        // 简易的世界变换：位置叠加，旋转叠加，缩放相乘
-        world.x += parentWorld.x;
-        world.y += parentWorld.y;
-        world.rotation += parentWorld.rotation;
-        world.scaleX *= parentWorld.scaleX;
-        world.scaleY *= parentWorld.scaleY;
-        return world;
+        Transform pw = m_Parent->GetWorldTransform();
+        Transform w = m_Transform;
+        w.x += pw.x;
+        w.y += pw.y;
+        w.rotation += pw.rotation;
+        w.scaleX *= pw.scaleX;
+        w.scaleY *= pw.scaleY;
+        return w;
     }
     return m_Transform;
 }
 
 void SceneNode::Update(float delta) {
-    if (!m_Visible) return;
+    if (!m_Active || !m_Visible) return;
     OnUpdate(delta);
-    for (auto* child : m_Children) {
-        child->Update(delta);
-    }
+    for (auto* child : m_Children) child->Update(delta);
 }
 
 void SceneNode::Render(SDL_Renderer* renderer) {
     if (!m_Visible) return;
     OnRender(renderer);
-    for (auto* child : m_Children) {
-        child->Render(renderer);
-    }
+    for (auto* child : m_Children) child->Render(renderer);
 }
 
-void SceneNode::UpdateRecursive(float delta) {
-    Update(delta);  // 已经包含子节点遍历，因此直接调用
-}
-
-void SceneNode::RenderRecursive(SDL_Renderer* renderer) {
-    Render(renderer);
-}
-
-// ---------- Scene ----------
 Scene::Scene() : m_Root("SceneRoot") {}
 
-void Scene::Update(float delta) {
-    m_Root.Update(delta);
-}
+void Scene::Update(float delta) { m_Root.Update(delta); }
+void Scene::Render(SDL_Renderer* renderer) { m_Root.Render(renderer); }
+void Scene::AddNode(SceneNode* node) { m_Root.AddChild(node); }
 
-void Scene::Render(SDL_Renderer* renderer) {
-    m_Root.Render(renderer);
+SceneNode* Scene::FindNodeByTag(const std::string& tag) {
+    return FindRecursive(&m_Root, tag, true);
 }
-
-void Scene::AddNode(SceneNode* node) {
-    m_Root.AddChild(node);
+SceneNode* Scene::FindNodeByName(const std::string& name) {
+    return FindRecursive(&m_Root, name, false);
+}
+SceneNode* Scene::FindRecursive(SceneNode* node, const std::string& str, bool byTag) {
+    if (byTag && node->GetTag() == str) return node;
+    if (!byTag && node->GetName() == str) return node;
+    for (auto* child : node->GetChildren()) {
+        auto* found = FindRecursive(child, str, byTag);
+        if (found) return found;
+    }
+    return nullptr;
 }
 
 } // namespace MoLin

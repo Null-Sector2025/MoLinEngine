@@ -12,7 +12,6 @@ public:
     int power = 0;
     int level = 1;
     int maxLevel = 10;
-
     using SkillEffect = std::function<void(class Character& user, class Character& target)>;
     SkillEffect onUse;
 };

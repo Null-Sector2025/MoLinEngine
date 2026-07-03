@@ -18,15 +18,12 @@ class Skill;
 class Character {
 public:
     Character(const std::string& name) : m_Name(name) {}
-
     void AddAttribute(const std::string& key, int baseValue, int max = 9999);
     Attribute* GetAttribute(const std::string& key);
     void ModifyAttribute(const std::string& key, int delta);
-
     void LearnSkill(std::shared_ptr<Skill> skill);
     bool HasSkill(const std::string& name) const;
     void UseSkill(const std::string& name, Character& target);
-
     std::string m_Name;
     int m_Level = 1;
     int m_Exp = 0;
