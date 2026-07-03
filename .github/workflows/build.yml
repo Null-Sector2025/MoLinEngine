@@ -4,18 +4,19 @@ on:
   push:
     branches: [ main, dev ]
     tags:
-      - 'v*'          # 推送 v1.0 这类标签时触发
+      - 'v*'
   pull_request:
     branches: [ main ]
 
 jobs:
-  # ========== Linux 构建 ==========
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
@@ -26,7 +27,6 @@ jobs:
           name: MoLinEngine-linux-x64
           path: build/libMoLinEngine.a
 
-  # ========== Android 构建 ==========
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +45,7 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           export ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}
-          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer lua --triplet arm64-android
+          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer sdl2-ttf lua --triplet arm64-android
       - name: Configure CMake for Android
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
@@ -67,7 +67,6 @@ jobs:
           name: MoLinEngine-android-arm64
           path: build-android/libMoLinEngine.so
 
-  # ========== 创建 Release（仅在推送标签时） ==========
   release:
     needs: [build-linux, build-android]
     if: startsWith(github.ref, 'refs/tags/v')
@@ -97,7 +96,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
-          body: "包含 Linux x64 静态库和 Android arm64-v8a 动态库。"
+          body: "包含 Linux x64 静态库和 Android arm64-v8a 动态库，以及引擎头文件。"
           files: |
             MoLinEngine-linux-x64.tar.gz
             MoLinEngine-android-arm64.tar.gz

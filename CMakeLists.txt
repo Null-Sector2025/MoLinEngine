@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MoLinEngine VERSION 0.2.0 LANGUAGES CXX)
+project(MoLinEngine VERSION 0.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,10 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
+find_package(SDL2_ttf REQUIRED)   # 新增
 find_package(Lua REQUIRED)
 
 set(ENGINE_SOURCES
     engine/core/engine.cpp
+    engine/core/event_system.cpp
+    engine/core/save_system.cpp
+    engine/core/json.cpp
     engine/scene/scene.cpp
     engine/input/input.cpp
     engine/script/lua_bind.cpp
@@ -21,6 +25,7 @@ set(ENGINE_SOURCES
     engine/graphics/animation.cpp
     engine/graphics/animated_sprite.cpp
     engine/graphics/particle_system.cpp
+    engine/graphics/text_renderer.cpp
     engine/audio/audio_player.cpp
     engine/ui/ui_button.cpp
     engine/rpg/character.cpp
@@ -33,13 +38,15 @@ target_include_directories(MoLinEngine PUBLIC
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIR}          # 修正为单数变量
+    ${SDL2_TTF_INCLUDE_DIRS}
+    ${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(MoLinEngine
     ${SDL2_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES}
+    ${SDL2_TTF_LIBRARIES}
     ${LUA_LIBRARIES}
 )
 
