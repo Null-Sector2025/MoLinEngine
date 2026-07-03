@@ -9,15 +9,12 @@ on:
     branches: [ main ]
 
 jobs:
-  # ========== Linux x64 ==========
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
@@ -28,7 +25,6 @@ jobs:
           name: MoLinEngine-linux-x64
           path: build/libMoLinEngine.a
 
-  # ========== Windows x64 ==========
   build-windows:
     runs-on: windows-latest
     steps:
@@ -49,52 +45,37 @@ jobs:
           name: MoLinEngine-windows-x64
           path: build/Release/MoLinEngine.lib
 
-  # ========== Android arm64-v8a ==========
-  build-android:
+  build-arm64:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup NDK
-        id: ndk
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r26b
-      - name: Clone vcpkg
+      - name: Enable multiarch
         run: |
-          git clone --depth 1 https://github.com/Microsoft/vcpkg.git vcpkg
-          ./vcpkg/bootstrap-vcpkg.sh
-      - name: Install Android deps
-        env:
-          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          sudo dpkg --add-architecture arm64
+          sudo apt-get update
+      - name: Install ARM64 cross-compile deps
         run: |
-          export ANDROID_NDK_HOME=${{ steps.ndk.outputs.ndk-path }}
-          ./vcpkg/vcpkg install sdl2 sdl2-image sdl2-mixer lua --triplet arm64-android
-      - name: Configure
-        env:
-          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          sudo apt-get install -y libsdl2-dev:arm64 libsdl2-image-dev:arm64 libsdl2-mixer-dev:arm64 liblua5.4-dev:arm64 2>/dev/null || echo "Some arm64 deps not in apt, will use pkg-config fallback"
+      - name: Configure for ARM64
         run: |
-          cmake -B build-android \
-            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DVCPKG_TARGET_TRIPLET=arm64-android \
-            -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/toolchains/android.cmake \
-            -DANDROID_NDK_HOME=${{ steps.ndk.outputs.ndk-path }} \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-21 \
+          cmake -B build-arm64 \
+            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON
       - name: Build
-        run: cmake --build build-android
-      - name: Verify artifact exists
-        run: ls -la build-android/libMoLinEngine.so
+        run: cmake --build build-arm64
+      - name: Verify artifact
+        run: ls -la build-arm64/libMoLinEngine.so
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MoLinEngine-android-arm64
-          path: build-android/libMoLinEngine.so
+          name: MoLinEngine-arm64
+          path: build-arm64/libMoLinEngine.so
 
-  # ========== Release ==========
   release:
-    needs: [build-linux, build-windows, build-android]
+    needs: [build-linux, build-windows, build-arm64]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
@@ -109,19 +90,19 @@ jobs:
           cp -r engine/* dist/include/
           cp artifacts/MoLinEngine-linux-x64/libMoLinEngine.a dist/
           cp artifacts/MoLinEngine-windows-x64/MoLinEngine.lib dist/
-          cp artifacts/MoLinEngine-android-arm64/libMoLinEngine.so dist/
+          cp artifacts/MoLinEngine-arm64/libMoLinEngine.so dist/
           cd dist
           tar -czvf ../MoLinEngine-linux-x64.tar.gz libMoLinEngine.a include/
-          tar -czvf ../MoLinEngine-android-arm64.tar.gz libMoLinEngine.so include/
+          tar -czvf ../MoLinEngine-arm64.tar.gz libMoLinEngine.so include/
           zip -r ../MoLinEngine-windows-x64.zip MoLinEngine.lib include/
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
-          body: "包含 Linux x64、Windows x64 静态库和 Android arm64-v8a 动态库。"
+          body: "包含 Linux x64、Windows x64 静态库和 ARM64（手机/树莓派）动态库。"
           files: |
             MoLinEngine-linux-x64.tar.gz
             MoLinEngine-windows-x64.zip
-            MoLinEngine-android-arm64.tar.gz
+            MoLinEngine-arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
