@@ -20,7 +20,7 @@ set(ENGINE_SOURCES
     engine/graphics/animated_sprite.cpp engine/graphics/particle_system.cpp
     engine/graphics/sprite_batch.cpp engine/graphics/text_renderer.cpp
     engine/graphics/transition.cpp
-    engine/audio/audio_player.cpp engine/audio/audio_manager.cpp
+    engine/audio/audio_manager.cpp
     engine/ui/ui_button.cpp engine/ui/ui_system.cpp
     engine/crypto/simple_crypto.cpp engine/save/save_manager.cpp
     engine/game/game_state.cpp

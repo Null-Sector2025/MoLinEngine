@@ -6,7 +6,7 @@ namespace MoLin {
 
 struct AnimationFrame {
     SDL_Rect clip;
-    float duration; // 秒
+    float duration;
 };
 
 class Animation {
