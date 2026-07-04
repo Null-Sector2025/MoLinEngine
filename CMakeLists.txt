@@ -27,7 +27,6 @@ set(ENGINE_SOURCES
     engine/rpg/character.cpp engine/rpg/inventory.cpp engine/rpg/npc.cpp
     engine/rpg/dialogue.cpp engine/rpg/quest.cpp engine/rpg/battle.cpp
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
-    engine/network/http_client.cpp
 )
 
 option(BUILD_ENGINE_LIB "构建引擎库" ON)
