@@ -1,6 +1,5 @@
 #include "audio_manager.h"
 #include <iostream>
-#include <cmath>
 
 namespace MoLin {
 
@@ -24,7 +23,7 @@ void AudioManager::LoadSound(const std::string& id, const std::string& path) {
     if (chunk) {
         m_Sounds[id] = chunk;
     } else {
-        std::cerr << "[Audio] Failed to load sound: " << path << " - " << Mix_GetError() << std::endl;
+        std::cerr << "[Audio] Failed to load sound: " << path << std::endl;
     }
 }
 
@@ -33,7 +32,7 @@ void AudioManager::LoadMusic(const std::string& id, const std::string& path) {
     if (music) {
         m_Musics[id] = music;
     } else {
-        std::cerr << "[Audio] Failed to load music: " << path << " - " << Mix_GetError() << std::endl;
+        std::cerr << "[Audio] Failed to load music: " << path << std::endl;
     }
 }
 
@@ -55,10 +54,6 @@ void AudioManager::FadeOutChannel(int channel, int ms) {
     if (channel >= 0) Mix_FadeOutChannel(channel, ms);
 }
 
-void AudioManager::FadeInChannel(int channel, int ms) {
-    if (channel >= 0) Mix_FadeInChannel(channel, ms, -1);
-}
-
 void AudioManager::PlayMusic(const std::string& id, bool loop, int fadeInMs) {
     auto it = m_Musics.find(id);
     if (it == m_Musics.end()) return;
@@ -77,7 +72,6 @@ void AudioManager::StopMusic(int fadeOutMs) {
     } else {
         Mix_HaltMusic();
     }
-    m_CurrentMusicId.clear();
 }
 
 void AudioManager::PauseMusic() { Mix_PauseMusic(); }
@@ -127,7 +121,6 @@ void AudioManager::PlaySound3D(const std::string& id, float sourceX, float sourc
         int vol = static_cast<int>(volume * m_MasterVolume * 128);
         Mix_Volume(channel, vol);
 
-        // 简单的左右声道平衡
         float pan = dx / maxDistance;
         pan = std::max(-1.0f, std::min(1.0f, pan));
         Uint8 left = static_cast<Uint8>(255 * (1.0f - std::max(0.0f, pan)));
