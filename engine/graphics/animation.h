@@ -12,11 +12,13 @@ struct AnimationFrame {
 class Animation {
 public:
     Animation();
+    ~Animation() {}
     void AddFrame(const SDL_Rect& clip, float duration);
     void Update(float delta);
     SDL_Rect GetCurrentFrame() const;
     void Reset();
     void SetLooping(bool loop) { m_Looping = loop; }
+    bool IsFinished() const { return m_Finished; }
 
 private:
     std::vector<AnimationFrame> m_Frames;
