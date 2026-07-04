@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include "core/engine.h"
 #include "graphics/sprite.h"
 #include "scene/scene.h"
@@ -20,7 +21,6 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // 创建场景
     auto scene = std::make_unique<MoLin::Scene>();
 
     engine.SetUpdateCallback([&](float dt) {
