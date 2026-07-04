@@ -1,6 +1,18 @@
 #pragma once
 #include "lua_bind.h"
+#include <SDL2/SDL.h>
 #include <memory>
+#include <string>
+#include <vector>
+
+// 前置声明
+namespace MoLin::RPG {
+    class DialogueManager;
+    class QuestManager;
+    class BattleSystem;
+    class EventManager;
+    struct DialogueLine;
+}
 
 namespace MoLin {
 
@@ -8,7 +20,6 @@ class LuaAPI {
 public:
     static void RegisterAll(LuaBind& lua);
 
-    // 外部设置接口
     static void SetDialogueManager(std::shared_ptr<RPG::DialogueManager> mgr);
     static void SetQuestManager(std::shared_ptr<RPG::QuestManager> mgr);
     static void SetBattleSystem(std::shared_ptr<RPG::BattleSystem> sys);
@@ -50,7 +61,7 @@ private:
     static int Lua_FailQuest(lua_State* L);
     static int Lua_UpdateObjective(lua_State* L);
 
-    // 角色
+    // 角色（统一命名）
     static int Lua_GetHP(lua_State* L);
     static int Lua_SetHP(lua_State* L);
     static int Lua_GetMP(lua_State* L);
@@ -89,6 +100,9 @@ private:
     // HTTP
     static int Lua_HttpGet(lua_State* L);
     static int Lua_HttpPost(lua_State* L);
+
+    // 事件
+    static int Lua_TriggerEvent(lua_State* L);
 };
 
 } // namespace MoLin
