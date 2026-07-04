@@ -11,7 +11,10 @@ if(WIN32)
     find_package(SDL2_ttf CONFIG REQUIRED)
     find_package(lua CONFIG REQUIRED)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    set(SDL2_INCLUDE_DIRS "")
+    
+    # 从导入目标获取头文件目录
+    get_target_property(SDL2_INC SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
+    set(SDL2_INCLUDE_DIRS ${SDL2_INC})
     set(COMMON_LIBS SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf Lua::lua)
 else()
     find_package(PkgConfig REQUIRED)
