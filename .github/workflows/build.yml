@@ -15,19 +15,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
-      - name: Build static library
+      - name: Build
         run: |
-          cmake -B build-lib -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=ON -DBUILD_ENGINE_EXE=OFF
-          cmake --build build-lib
-      - name: Build executable
-        run: |
-          cmake -B build-exe -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=OFF -DBUILD_ENGINE_EXE=ON
-          cmake --build build-exe
-      - name: Package Linux x64
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+      - name: Package
         run: |
           mkdir -p dist/linux-x64/bin dist/linux-x64/lib dist/linux-x64/include
-          cp build-exe/MoLinEngineExe dist/linux-x64/bin/
-          cp build-lib/libMoLinEngine.a dist/linux-x64/lib/
+          cp build/MoLinEngineExe dist/linux-x64/bin/
+          cp build/libMoLinEngine.a dist/linux-x64/lib/
           cp -r engine/* dist/linux-x64/include/
           cd dist && tar -czvf ../MoLinEngine-linux-x64.tar.gz linux-x64/
       - name: Upload artifact
@@ -46,20 +42,16 @@ jobs:
           C:\vcpkg\bootstrap-vcpkg.bat
       - name: Install deps
         run: C:\vcpkg\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows lua:x64-windows
-      - name: Build static library
+      - name: Build
         run: |
-          cmake -B build-lib -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=ON -DBUILD_ENGINE_EXE=OFF
-          cmake --build build-lib --config Release
-      - name: Build executable
-        run: |
-          cmake -B build-exe -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=OFF -DBUILD_ENGINE_EXE=ON
-          cmake --build build-exe --config Release
-      - name: Package Windows x64
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+      - name: Package
         shell: cmd
         run: |
           mkdir dist\windows-x64\bin dist\windows-x64\lib dist\windows-x64\include
-          copy build-exe\Release\MoLinEngineExe.exe dist\windows-x64\bin\
-          copy build-lib\Release\MoLinEngine.lib dist\windows-x64\lib\
+          copy build\Release\MoLinEngineExe.exe dist\windows-x64\bin\
+          copy build\Release\MoLinEngine.lib dist\windows-x64\lib\
           xcopy /E /I engine dist\windows-x64\include\engine
           cd dist && powershell Compress-Archive -Path windows-x64 -DestinationPath ..\MoLinEngine-windows-x64.zip
       - name: Upload artifact
@@ -74,19 +66,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
-      - name: Build shared library
+      - name: Build
         run: |
-          cmake -B build-lib -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_ENGINE_LIB=ON -DBUILD_ENGINE_EXE=OFF
-          cmake --build build-lib
-      - name: Build executable
-        run: |
-          cmake -B build-exe -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=OFF -DBUILD_ENGINE_EXE=ON
-          cmake --build build-exe
-      - name: Package ARM64
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+          cmake --build build
+      - name: Package
         run: |
           mkdir -p dist/linux-arm64/bin dist/linux-arm64/lib dist/linux-arm64/include
-          cp build-exe/MoLinEngineExe dist/linux-arm64/bin/
-          cp build-lib/libMoLinEngine.so dist/linux-arm64/lib/
+          cp build/MoLinEngineExe dist/linux-arm64/bin/
+          cp build/libMoLinEngine.so dist/linux-arm64/lib/
           cp -r engine/* dist/linux-arm64/include/
           cd dist && tar -czvf ../MoLinEngine-linux-arm64.tar.gz linux-arm64/
       - name: Upload artifact
@@ -110,16 +98,10 @@ jobs:
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
           body: |
-            ## 墨麟引擎 ${{ github.ref_name }} 正式发布
-            
-            ### 包含内容
+            ## 墨麟引擎 ${{ github.ref_name }}
             - **Linux x64**: 可执行文件 + 静态库 + 头文件
-            - **Windows x64**: EXE文件 + 静态库 + 头文件  
-            - **Linux ARM64**: 可执行文件 + 动态库 + 头文件（手机/树莓派）
-            
-            ### 使用方式
-            1. 下载对应平台的压缩包
-            2. 解压后直接运行 bin/MoLinEngineExe 或 bin/MoLinEngineExe.exe
+            - **Windows x64**: EXE + 静态库 + 头文件
+            - **Linux ARM64**: 可执行文件 + 动态库 + 头文件
           files: |
             artifacts/MoLinEngine-linux-x64/MoLinEngine-linux-x64.tar.gz
             artifacts/MoLinEngine-windows-x64/MoLinEngine-windows-x64.zip

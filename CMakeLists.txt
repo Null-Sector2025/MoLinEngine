@@ -29,37 +29,35 @@ set(ENGINE_SOURCES
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
 )
 
-option(BUILD_ENGINE_LIB "构建引擎库" ON)
-option(BUILD_ENGINE_EXE "构建引擎可执行文件" OFF)
+# 静态库
+add_library(MoLinEngine STATIC ${ENGINE_SOURCES})
+target_include_directories(MoLinEngine PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine
+    ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
+)
+target_link_libraries(MoLinEngine
+    ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
+    ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
+)
 
-if(BUILD_ENGINE_LIB)
-    add_library(MoLinEngine STATIC ${ENGINE_SOURCES})
-    target_include_directories(MoLinEngine PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/engine
-        ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
-        ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
-    )
-    target_link_libraries(MoLinEngine
-        ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
-    )
-    install(TARGETS MoLinEngine ARCHIVE DESTINATION lib)
-    install(DIRECTORY engine/ DESTINATION include/MoLinEngine FILES_MATCHING PATTERN "*.h")
-endif()
+# 可执行文件
+add_executable(MoLinEngineExe
+    engine/main_entry.cpp
+    ${ENGINE_SOURCES}
+)
+target_include_directories(MoLinEngineExe PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine
+    ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
+)
+target_link_libraries(MoLinEngineExe
+    ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
+    ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
+)
 
-if(BUILD_ENGINE_EXE)
-    add_executable(MoLinEngineExe
-        engine/main_entry.cpp
-        ${ENGINE_SOURCES}
-    )
-    target_include_directories(MoLinEngineExe PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/engine
-        ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
-        ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
-    )
-    target_link_libraries(MoLinEngineExe
-        ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
-        ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
-    )
-    install(TARGETS MoLinEngineExe RUNTIME DESTINATION bin)
-endif()
+install(TARGETS MoLinEngine MoLinEngineExe
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+install(DIRECTORY engine/ DESTINATION include/MoLinEngine FILES_MATCHING PATTERN "*.h")
