@@ -11,7 +11,6 @@ if(WIN32)
     find_package(SDL2_ttf CONFIG REQUIRED)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
-    # 通用 Lua 查找（优先导入目标，其次变量）
     find_package(Lua 5.4 QUIET)
     find_package(lua CONFIG QUIET)
     find_package(unofficial-lua CONFIG QUIET)
@@ -25,10 +24,9 @@ if(WIN32)
     elseif(DEFINED LUA_LIBRARIES)
         set(LUA_TARGET ${LUA_LIBRARIES})
     else()
-        message(FATAL_ERROR "Lua not found. Install lua[cpp]:x64-windows via vcpkg.")
+        message(FATAL_ERROR "Lua not found.")
     endif()
 
-    # 获取 SDL2 头文件路径
     get_target_property(SDL2_INC SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
     set(SDL2_INCLUDE_DIRS ${SDL2_INC})
     set(COMMON_LIBS SDL2::SDL2 SDL2_image::SDL2_image SDL2_mixer::SDL2_mixer SDL2_ttf::SDL2_ttf ${LUA_TARGET})
@@ -78,6 +76,11 @@ target_include_directories(MoLinEngineExe PRIVATE
     ${SDL2_INCLUDE_DIRS}
 )
 target_link_libraries(MoLinEngineExe ${COMMON_LIBS})
+
+# Windows 默认用 WinMain，这里强制使用标准 main（控制台模式）
+if(WIN32)
+    set_target_properties(MoLinEngineExe PROPERTIES WIN32_EXECUTABLE FALSE)
+endif()
 
 install(TARGETS MoLinEngine MoLinEngineExe
     LIBRARY DESTINATION lib
