@@ -1,5 +1,5 @@
 #include "collision.h"
-#include <cmath>
+#include <algorithm>
 
 namespace MoLin {
 
