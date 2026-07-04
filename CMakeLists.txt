@@ -29,23 +29,23 @@ set(ENGINE_SOURCES
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
 )
 
-# 静态库
-add_library(MoLinEngine STATIC ${ENGINE_SOURCES})
-target_include_directories(MoLinEngine PUBLIC
+# 先编译一个对象库（Object Library），避免源文件重复编译
+add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
+target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIR}
 )
+
+# 静态库
+add_library(MoLinEngine STATIC $<TARGET_OBJECTS:MoLinEngineObj>)
 target_link_libraries(MoLinEngine
     ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
 )
 
 # 可执行文件
-add_executable(MoLinEngineExe
-    engine/main_entry.cpp
-    ${ENGINE_SOURCES}
-)
+add_executable(MoLinEngineExe engine/main_entry.cpp $<TARGET_OBJECTS:MoLinEngineObj>)
 target_include_directories(MoLinEngineExe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
