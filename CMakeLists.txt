@@ -3,7 +3,6 @@ project(MoLinEngine VERSION 1.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 使用 pkg-config 查找 SDL2 系列库
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -31,31 +30,29 @@ set(ENGINE_SOURCES
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
 )
 
-add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
-target_include_directories(MoLinEngineObj PRIVATE
+set(COMMON_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS}
 )
 
-add_library(MoLinEngine STATIC $<TARGET_OBJECTS:MoLinEngineObj>)
-target_link_libraries(MoLinEngine
-    ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
+set(COMMON_LIBS
+    SDL2 SDL2_image SDL2_mixer SDL2_ttf lua5.4
 )
+
+add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
+target_include_directories(MoLinEngineObj PRIVATE ${COMMON_INCLUDES})
+
+# 去掉 STATIC，让 BUILD_SHARED_LIBS 控制类型
+add_library(MoLinEngine $<TARGET_OBJECTS:MoLinEngineObj>)
+target_link_libraries(MoLinEngine ${COMMON_LIBS})
 
 add_executable(MoLinEngineExe engine/main_entry.cpp $<TARGET_OBJECTS:MoLinEngineObj>)
-target_include_directories(MoLinEngineExe PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/engine
-    ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
-    ${SDL2_MIXER_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS}
-)
-target_link_libraries(MoLinEngineExe
-    ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
-    ${SDL2_MIXER_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${LUA_LIBRARIES}
-)
+target_include_directories(MoLinEngineExe PRIVATE ${COMMON_INCLUDES})
+target_link_libraries(MoLinEngineExe ${COMMON_LIBS})
 
 install(TARGETS MoLinEngine MoLinEngineExe
+    LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
 )
