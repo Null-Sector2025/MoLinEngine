@@ -1,16 +1,14 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-namespace MoLin::Collision {
+namespace MoLin {
 
-inline bool PointInRect(int px, int py, const SDL_Rect& rect) {
-    return (px >= rect.x && px <= rect.x + rect.w &&
-            py >= rect.y && py <= rect.y + rect.h);
-}
+class Collision {
+public:
+    static bool RectRect(const SDL_Rect& a, const SDL_Rect& b);
+    static bool PointRect(int x, int y, const SDL_Rect& rect);
+    static bool CircleCircle(int x1, int y1, int r1, int x2, int y2, int r2);
+    static bool RectCircle(const SDL_Rect& rect, int cx, int cy, int radius);
+};
 
-inline bool RectIntersect(const SDL_Rect& a, const SDL_Rect& b) {
-    return (a.x < b.x + b.w && a.x + a.w > b.x &&
-            a.y < b.y + b.h && a.y + a.h > b.y);
-}
-
-} // namespace MoLin::Collision
+} // namespace MoLin

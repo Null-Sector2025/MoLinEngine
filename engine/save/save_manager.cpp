@@ -1,6 +1,7 @@
 #include "save_manager.h"
 #include <iostream>
 #include <cstring>
+#include <ctime>
 
 namespace MoLin {
 
@@ -20,6 +21,7 @@ bool SaveManager::SaveToFile(const std::string& path, const std::vector<uint8_t>
     SaveHeader header;
     header.dataSize = static_cast<uint32_t>(encrypted.size());
     header.checksum = checksum;
+    header.timestamp = static_cast<uint32_t>(std::time(nullptr));
     file.write(reinterpret_cast<const char*>(&header), sizeof(header));
     file.write(reinterpret_cast<const char*>(encrypted.data()), encrypted.size());
     file.close();
@@ -48,16 +50,30 @@ bool SaveManager::LoadFromFile(const std::string& path, std::vector<uint8_t>& ou
         return false;
     }
 
-    // 校验
     if (!Crypto::SimpleCrypto::ValidateChecksum(encrypted, header.checksum)) {
         std::cerr << "[Save] Checksum mismatch, file may be corrupted" << std::endl;
         return false;
     }
 
     outData = encrypted;
-    Crypto::SimpleCrypto::EncryptDecrypt(outData, m_CryptoKey); // 解密
+    Crypto::SimpleCrypto::EncryptDecrypt(outData, m_CryptoKey);
     std::cout << "[Save] Loaded from " << path << " successfully" << std::endl;
     return true;
+}
+
+std::vector<SaveSlotInfo> SaveManager::GetSaveSlots() {
+    std::vector<SaveSlotInfo> slots;
+    // 简化实现：检查当前目录下 save_*.sav 文件
+    for (int i = 1; i <= 10; i++) {
+        std::string path = "save_" + std::to_string(i) + ".sav";
+        std::ifstream file(path, std::ios::binary);
+        if (file) {
+            SaveHeader header;
+            file.read(reinterpret_cast<char*>(&header), sizeof(header));
+            slots.push_back({i, header.timestamp, "unknown", 0});
+        }
+    }
+    return slots;
 }
 
 } // namespace MoLin

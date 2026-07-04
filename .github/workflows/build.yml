@@ -1,4 +1,4 @@
-name: Build MoLin Engine
+name: Build MoLin Engine All Platforms
 
 on:
   push:
@@ -14,16 +14,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build
-        run: cmake --build build
-      - name: Upload artifact
+        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
+      - name: Configure Library
+        run: cmake -B build-lib -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=ON -DBUILD_ENGINE_EXE=OFF
+      - name: Build Library
+        run: cmake --build build-lib
+      - name: Configure EXE
+        run: cmake -B build-exe -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_LIB=OFF -DBUILD_ENGINE_EXE=ON
+      - name: Build EXE
+        run: cmake --build build-exe
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-linux-x64
-          path: build/libMoLinEngine.a
+          path: |
+            build-lib/libMoLinEngine.a
+            build-exe/MoLinEngineExe
 
   build-windows:
     runs-on: windows-latest
@@ -34,35 +40,55 @@ jobs:
           git clone --depth 1 https://github.com/Microsoft/vcpkg.git C:\vcpkg
           C:\vcpkg\bootstrap-vcpkg.bat
       - name: Install deps
-        run: C:\vcpkg\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows lua:x64-windows
+        run: C:\vcpkg\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows lua:x64-windows
       - name: Configure
-        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_ENGINE_EXE=ON
       - name: Build
         run: cmake --build build --config Release
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-windows-x64
-          path: build/Release/MoLinEngine.lib
+          path: |
+            build/Release/MoLinEngine.lib
+            build/Release/MoLinEngineExe.exe
 
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
       - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev liblua5.4-dev
+        run: sudo apt-get update && sudo apt-get install -y cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_ENGINE_EXE=ON
       - name: Build
         run: cmake --build build
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MoLinEngine-linux-arm64
-          path: build/libMoLinEngine.so
+          path: |
+            build/libMoLinEngine.so
+            build/MoLinEngineExe
+
+  build-android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build APK Project
+        run: |
+          chmod +x build-scripts/build_android.sh
+          ./build-scripts/build_android.sh
+      - name: Upload APK project
+        uses: actions/upload-artifact@v4
+        with:
+          name: MoLinEngine-Android-Project
+          path: build-android-apk/
 
   release:
-    needs: [build-linux-x64, build-windows, build-linux-arm64]
+    needs: [build-linux-x64, build-windows, build-linux-arm64, build-android-apk]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
@@ -71,25 +97,23 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Package assets
+      - name: Package all
         run: |
-          mkdir -p dist/include
-          cp -r engine/* dist/include/
-          cp artifacts/MoLinEngine-linux-x64/libMoLinEngine.a dist/
-          cp artifacts/MoLinEngine-windows-x64/MoLinEngine.lib dist/
-          cp artifacts/MoLinEngine-linux-arm64/libMoLinEngine.so dist/
-          cd dist
-          tar -czvf ../MoLinEngine-linux-x64.tar.gz libMoLinEngine.a include/
-          tar -czvf ../MoLinEngine-linux-arm64.tar.gz libMoLinEngine.so include/
-          zip -r ../MoLinEngine-windows-x64.zip MoLinEngine.lib include/
+          mkdir -p dist
+          cd artifacts
+          zip -r ../dist/MoLinEngine-linux-x64.zip MoLinEngine-linux-x64/
+          zip -r ../dist/MoLinEngine-windows-x64.zip MoLinEngine-windows-x64/
+          zip -r ../dist/MoLinEngine-linux-arm64.zip MoLinEngine-linux-arm64/
+          zip -r ../dist/MoLinEngine-Android-Project.zip MoLinEngine-Android-Project/
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: "墨麟引擎 ${{ github.ref_name }}"
-          body: "包含 Linux x64、Windows x64 静态库和 Linux ARM64 动态库（可用于安卓 Termux/树莓派）。"
+          body: "包含 Linux/Windows EXE 文件、Android APK 项目、静态库和动态库。"
           files: |
-            MoLinEngine-linux-x64.tar.gz
-            MoLinEngine-windows-x64.zip
-            MoLinEngine-linux-arm64.tar.gz
+            dist/MoLinEngine-linux-x64.zip
+            dist/MoLinEngine-windows-x64.zip
+            dist/MoLinEngine-linux-arm64.zip
+            dist/MoLinEngine-Android-Project.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
