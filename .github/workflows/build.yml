@@ -43,7 +43,7 @@ jobs:
           C:\vcpkg\bootstrap-vcpkg.bat
       - name: Install deps
         run: |
-          C:\vcpkg\vcpkg.exe install lua[cpp]:x64-windows sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
+          C:\vcpkg\vcpkg.exe install lua:x64-windows sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
       - name: Build
         run: |
           cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_APPLOCAL_DEPS=OFF
