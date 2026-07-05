@@ -61,16 +61,17 @@ set(ENGINE_SOURCES
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
 )
 
-# 编辑器源文件
 set(EDITOR_SOURCES
     engine/editor/editor_main.cpp
     engine/debug/imgui/imgui.cpp
+    engine/debug/imgui/imgui_draw.cpp
     engine/debug/imgui/imgui_widgets.cpp
+    engine/debug/imgui/imgui_tables.cpp
+    engine/debug/imgui/imgui_font.cpp
     engine/debug/imgui/imgui_impl_sdl2.cpp
     engine/debug/imgui/imgui_impl_sdlrenderer2.cpp
 )
 
-# 对象库（引擎核心）
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
 target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
@@ -80,7 +81,6 @@ target_include_directories(MoLinEngineObj PRIVATE
 add_library(MoLinEngine $<TARGET_OBJECTS:MoLinEngineObj>)
 target_link_libraries(MoLinEngine ${COMMON_LIBS})
 
-# 引擎可执行文件
 add_executable(MoLinEngineExe engine/main_entry.cpp $<TARGET_OBJECTS:MoLinEngineObj>)
 target_include_directories(MoLinEngineExe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
@@ -91,11 +91,7 @@ if(WIN32)
     set_target_properties(MoLinEngineExe PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
-# 编辑器可执行文件
-add_executable(MoLinEditor
-    ${EDITOR_SOURCES}
-    $<TARGET_OBJECTS:MoLinEngineObj>
-)
+add_executable(MoLinEditor ${EDITOR_SOURCES} $<TARGET_OBJECTS:MoLinEngineObj>)
 target_include_directories(MoLinEditor PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${CMAKE_CURRENT_SOURCE_DIR}/engine/debug/imgui
