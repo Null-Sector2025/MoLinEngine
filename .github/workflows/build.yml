@@ -17,7 +17,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD=OFF
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build
       - name: Package
         run: |
@@ -46,7 +46,7 @@ jobs:
           C:\vcpkg\vcpkg.exe install lua[cpp]:x64-windows sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
       - name: Build
         run: |
-          cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD=OFF
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_APPLOCAL_DEPS=OFF
           cmake --build build --config Release
       - name: Package
         shell: cmd
@@ -58,12 +58,11 @@ jobs:
           copy build\Release\MoLinEditor.exe dist\windows-x64\bin\
           copy build\Release\MoLinEngine.lib dist\windows-x64\lib\
           xcopy /E /I engine dist\windows-x64\include\engine
-          :: 手动复制必要的 SDL2 等 DLL（如果游戏需要独立运行）
+          :: 手动复制必要的 SDL2 等 DLL
           copy C:\vcpkg\installed\x64-windows\bin\SDL2.dll dist\windows-x64\bin\
           copy C:\vcpkg\installed\x64-windows\bin\SDL2_image.dll dist\windows-x64\bin\
           copy C:\vcpkg\installed\x64-windows\bin\SDL2_mixer.dll dist\windows-x64\bin\
           copy C:\vcpkg\installed\x64-windows\bin\SDL2_ttf.dll dist\windows-x64\bin\
-          :: Lua DLL 名称可能不同，尝试复制
           if exist C:\vcpkg\installed\x64-windows\bin\lua.dll copy C:\vcpkg\installed\x64-windows\bin\lua.dll dist\windows-x64\bin\
           if exist C:\vcpkg\installed\x64-windows\bin\lua5.4.dll copy C:\vcpkg\installed\x64-windows\bin\lua5.4.dll dist\windows-x64\bin\
           cd dist && powershell Compress-Archive -Path windows-x64 -DestinationPath ..\MoLinEngine-windows-x64.zip
@@ -81,7 +80,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev liblua5.4-dev
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD=OFF
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
           cmake --build build
       - name: Package
         run: |
