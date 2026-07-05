@@ -68,13 +68,17 @@ int main(int argc, char* argv[]) {
                 InitDefaultMap();
             }
             ImGui::Separator();
+
+            // 网格绘制：使用 PushID/PopID 避免 ID 冲突
             for (int y = 0; y < mapHeight; y++) {
                 for (int x = 0; x < mapWidth; x++) {
+                    ImGui::PushID(y * mapWidth + x);  // 唯一 ID
                     char label[32];
                     sprintf(label, "%d", tiles[y][x]);
                     if (ImGui::Button(label, ImVec2(tileSize, tileSize))) {
                         tiles[y][x] = (tiles[y][x] + 1) % 3;
                     }
+                    ImGui::PopID();
                     if (x < mapWidth - 1) ImGui::SameLine();
                 }
             }
