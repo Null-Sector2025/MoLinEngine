@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include "../core/engine.h"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
