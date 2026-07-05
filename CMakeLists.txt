@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
+    # 阻止 vcpkg 自动部署依赖项到构建目录
+    set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD OFF)
+    # 也可以设置 VCPKG_MANIFEST_INSTALL OFF（如果使用 manifest 模式）
+    
     find_package(SDL2 CONFIG REQUIRED)
     find_package(SDL2_image CONFIG REQUIRED)
     find_package(SDL2_mixer CONFIG REQUIRED)
@@ -67,7 +71,6 @@ set(EDITOR_SOURCES
     engine/debug/imgui/imgui_draw.cpp
     engine/debug/imgui/imgui_widgets.cpp
     engine/debug/imgui/imgui_tables.cpp
-    engine/debug/imgui/imgui_font.cpp
     engine/debug/imgui/imgui_impl_sdl2.cpp
     engine/debug/imgui/imgui_impl_sdlrenderer2.cpp
 )
