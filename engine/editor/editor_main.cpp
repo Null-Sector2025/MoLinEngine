@@ -1,7 +1,7 @@
 #include "../core/engine.h"
-#include "../debug/imgui/imgui.h"
-#include "../debug/imgui/imgui_impl_sdl2.h"
-#include "../debug/imgui/imgui_impl_sdlrenderer2.h"
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
 #include <iostream>
 #include <vector>
 
@@ -27,7 +27,6 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // 初始化 ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -47,7 +46,6 @@ int main(int argc, char* argv[]) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // 菜单
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("文件")) {
                 if (ImGui::MenuItem("退出")) engine.Quit();
@@ -60,7 +58,6 @@ int main(int argc, char* argv[]) {
             ImGui::EndMainMenuBar();
         }
 
-        // 地图编辑窗口
         if (showMapEditor) {
             ImGui::Begin("地图编辑器", &showMapEditor);
             ImGui::InputInt("宽度", &mapWidth);
@@ -70,13 +67,12 @@ int main(int argc, char* argv[]) {
                 InitDefaultMap();
             }
             ImGui::Separator();
-            // 绘制瓦片网格（简化：用按钮代替）
             for (int y = 0; y < mapHeight; y++) {
                 for (int x = 0; x < mapWidth; x++) {
                     char label[32];
                     sprintf(label, "%d", tiles[y][x]);
                     if (ImGui::Button(label, ImVec2(tileSize, tileSize))) {
-                        tiles[y][x] = (tiles[y][x] + 1) % 3; // 循环切换
+                        tiles[y][x] = (tiles[y][x] + 1) % 3;
                     }
                     if (x < mapWidth - 1) ImGui::SameLine();
                 }
