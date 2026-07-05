@@ -23,6 +23,7 @@ jobs:
         run: |
           mkdir -p dist/linux-x64/bin dist/linux-x64/lib dist/linux-x64/include
           cp build/MoLinEngineExe dist/linux-x64/bin/
+          cp build/MoLinEditor dist/linux-x64/bin/
           cp build/libMoLinEngine.a dist/linux-x64/lib/
           cp -r engine/* dist/linux-x64/include/
           cd dist && tar -czvf ../MoLinEngine-linux-x64.tar.gz linux-x64/
@@ -52,6 +53,7 @@ jobs:
         run: |
           mkdir dist\windows-x64\bin dist\windows-x64\lib dist\windows-x64\include
           copy build\Release\MoLinEngineExe.exe dist\windows-x64\bin\
+          copy build\Release\MoLinEditor.exe dist\windows-x64\bin\
           copy build\Release\MoLinEngine.lib dist\windows-x64\lib\
           xcopy /E /I engine dist\windows-x64\include\engine
           cd dist && powershell Compress-Archive -Path windows-x64 -DestinationPath ..\MoLinEngine-windows-x64.zip
@@ -75,6 +77,7 @@ jobs:
         run: |
           mkdir -p dist/linux-arm64/bin dist/linux-arm64/lib dist/linux-arm64/include
           cp build/MoLinEngineExe dist/linux-arm64/bin/
+          cp build/MoLinEditor dist/linux-arm64/bin/
           cp build/libMoLinEngine.so dist/linux-arm64/lib/
           cp -r engine/* dist/linux-arm64/include/
           cd dist && tar -czvf ../MoLinEngine-linux-arm64.tar.gz linux-arm64/
@@ -103,6 +106,7 @@ jobs:
             - **Linux x64**: 可执行文件 + 静态库 + 头文件
             - **Windows x64**: EXE + 静态库 + 头文件
             - **Linux ARM64**: 可执行文件 + 动态库(.so) + 头文件
+            - 内置 **墨麟编辑器** (MoLinEditor)
           files: |
             artifacts/MoLinEngine-linux-x64/MoLinEngine-linux-x64.tar.gz
             artifacts/MoLinEngine-windows-x64/MoLinEngine-windows-x64.zip

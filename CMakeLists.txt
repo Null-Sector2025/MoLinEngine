@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MoLinEngine VERSION 1.2.0 LANGUAGES CXX)
+project(MoLinEngine VERSION 1.3.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -61,6 +61,15 @@ set(ENGINE_SOURCES
     engine/rpg/event_system.cpp engine/rpg/map_loader.cpp engine/rpg/dialogue_tree.cpp
 )
 
+# 编辑器源文件
+set(EDITOR_SOURCES
+    engine/editor/editor_main.cpp
+    engine/debug/imgui/imgui.cpp
+    engine/debug/imgui/imgui_impl_sdl2.cpp
+    engine/debug/imgui/imgui_impl_sdlrenderer2.cpp
+)
+
+# 对象库（引擎核心）
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
 target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
@@ -70,19 +79,33 @@ target_include_directories(MoLinEngineObj PRIVATE
 add_library(MoLinEngine $<TARGET_OBJECTS:MoLinEngineObj>)
 target_link_libraries(MoLinEngine ${COMMON_LIBS})
 
+# 引擎可执行文件
 add_executable(MoLinEngineExe engine/main_entry.cpp $<TARGET_OBJECTS:MoLinEngineObj>)
 target_include_directories(MoLinEngineExe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${SDL2_INCLUDE_DIRS}
 )
 target_link_libraries(MoLinEngineExe ${COMMON_LIBS})
-
-# Windows 默认用 WinMain，这里强制使用标准 main（控制台模式）
 if(WIN32)
     set_target_properties(MoLinEngineExe PROPERTIES WIN32_EXECUTABLE FALSE)
 endif()
 
-install(TARGETS MoLinEngine MoLinEngineExe
+# 编辑器可执行文件
+add_executable(MoLinEditor
+    ${EDITOR_SOURCES}
+    $<TARGET_OBJECTS:MoLinEngineObj>
+)
+target_include_directories(MoLinEditor PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine/debug/imgui
+    ${SDL2_INCLUDE_DIRS}
+)
+target_link_libraries(MoLinEditor ${COMMON_LIBS})
+if(WIN32)
+    set_target_properties(MoLinEditor PROPERTIES WIN32_EXECUTABLE FALSE)
+endif()
+
+install(TARGETS MoLinEngine MoLinEngineExe MoLinEditor
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
