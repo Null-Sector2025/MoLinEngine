@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
     engine.SetRenderCallback([&](SDL_Renderer* renderer) {
         ImGui::Render();
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
     });
 
     engine.Run();
