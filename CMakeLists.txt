@@ -65,6 +65,7 @@ set(ENGINE_SOURCES
 set(EDITOR_SOURCES
     engine/editor/editor_main.cpp
     engine/debug/imgui/imgui.cpp
+    engine/debug/imgui/imgui_widgets.cpp
     engine/debug/imgui/imgui_impl_sdl2.cpp
     engine/debug/imgui/imgui_impl_sdlrenderer2.cpp
 )

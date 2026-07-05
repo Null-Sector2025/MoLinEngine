@@ -51,11 +51,21 @@ jobs:
       - name: Package
         shell: cmd
         run: |
-          mkdir dist\windows-x64\bin dist\windows-x64\lib dist\windows-x64\include
+          if not exist dist\windows-x64\bin mkdir dist\windows-x64\bin
+          if not exist dist\windows-x64\lib mkdir dist\windows-x64\lib
+          if not exist dist\windows-x64\include mkdir dist\windows-x64\include
           copy build\Release\MoLinEngineExe.exe dist\windows-x64\bin\
           copy build\Release\MoLinEditor.exe dist\windows-x64\bin\
           copy build\Release\MoLinEngine.lib dist\windows-x64\lib\
           xcopy /E /I engine dist\windows-x64\include\engine
+          :: 手动复制必要的 SDL2 等 DLL（如果游戏需要独立运行）
+          copy C:\vcpkg\installed\x64-windows\bin\SDL2.dll dist\windows-x64\bin\
+          copy C:\vcpkg\installed\x64-windows\bin\SDL2_image.dll dist\windows-x64\bin\
+          copy C:\vcpkg\installed\x64-windows\bin\SDL2_mixer.dll dist\windows-x64\bin\
+          copy C:\vcpkg\installed\x64-windows\bin\SDL2_ttf.dll dist\windows-x64\bin\
+          :: Lua DLL 名称可能不同，尝试复制
+          if exist C:\vcpkg\installed\x64-windows\bin\lua.dll copy C:\vcpkg\installed\x64-windows\bin\lua.dll dist\windows-x64\bin\
+          if exist C:\vcpkg\installed\x64-windows\bin\lua5.4.dll copy C:\vcpkg\installed\x64-windows\bin\lua5.4.dll dist\windows-x64\bin\
           cd dist && powershell Compress-Archive -Path windows-x64 -DestinationPath ..\MoLinEngine-windows-x64.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -104,7 +114,7 @@ jobs:
           body: |
             ## 墨麟引擎 ${{ github.ref_name }}
             - **Linux x64**: 可执行文件 + 静态库 + 头文件
-            - **Windows x64**: EXE + 静态库 + 头文件
+            - **Windows x64**: EXE + 静态库 + 头文件（含必要 DLL）
             - **Linux ARM64**: 可执行文件 + 动态库(.so) + 头文件
             - 内置 **墨麟编辑器** (MoLinEditor)
           files: |
