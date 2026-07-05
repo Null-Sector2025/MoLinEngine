@@ -43,7 +43,7 @@ jobs:
           C:\vcpkg\bootstrap-vcpkg.bat
       - name: Install deps
         run: |
-          C:\vcpkg\vcpkg.exe install lua:x64-windows sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
+          C:\vcpkg\vcpkg.exe install lua[cpp]:x64-windows sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
       - name: Build
         run: |
           cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DVCPKG_APPLOCAL_DEPS=OFF
@@ -58,13 +58,25 @@ jobs:
           copy build\Release\MoLinEditor.exe dist\windows-x64\bin\
           copy build\Release\MoLinEngine.lib dist\windows-x64\lib\
           xcopy /E /I engine dist\windows-x64\include\engine
-          :: 手动复制必要的 SDL2 等 DLL
-          copy C:\vcpkg\installed\x64-windows\bin\SDL2.dll dist\windows-x64\bin\
-          copy C:\vcpkg\installed\x64-windows\bin\SDL2_image.dll dist\windows-x64\bin\
-          copy C:\vcpkg\installed\x64-windows\bin\SDL2_mixer.dll dist\windows-x64\bin\
-          copy C:\vcpkg\installed\x64-windows\bin\SDL2_ttf.dll dist\windows-x64\bin\
-          if exist C:\vcpkg\installed\x64-windows\bin\lua.dll copy C:\vcpkg\installed\x64-windows\bin\lua.dll dist\windows-x64\bin\
-          if exist C:\vcpkg\installed\x64-windows\bin\lua5.4.dll copy C:\vcpkg\installed\x64-windows\bin\lua5.4.dll dist\windows-x64\bin\
+          :: 复制所有必要的 DLL（来自 vcpkg 安装目录）
+          set VCPKG_BIN=C:\vcpkg\installed\x64-windows\bin
+          copy %VCPKG_BIN%\SDL2.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\SDL2_image.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\SDL2_mixer.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\SDL2_ttf.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\libpng16.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\z.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\vorbisfile.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\vorbis.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\ogg.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\wavpackdll.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\freetype.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\bz2.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\brotlidec.dll dist\windows-x64\bin\
+          copy %VCPKG_BIN%\brotlicommon.dll dist\windows-x64\bin\
+          :: Lua DLL（可能存在 lua.dll 或 lua5.4.dll）
+          if exist %VCPKG_BIN%\lua.dll copy %VCPKG_BIN%\lua.dll dist\windows-x64\bin\
+          if exist %VCPKG_BIN%\lua5.4.dll copy %VCPKG_BIN%\lua5.4.dll dist\windows-x64\bin\
           cd dist && powershell Compress-Archive -Path windows-x64 -DestinationPath ..\MoLinEngine-windows-x64.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
