@@ -1,24 +1,16 @@
 #include "rpg/inventory.h"
-#include "rpg/item_prototype.h"
 #include <algorithm>
 
+namespace MoLin {
 namespace RPG {
 
-Inventory::Inventory() {}
-
-Inventory::~Inventory() {}
-
 void Inventory::AddItem(const std::string& id, int count) {
-    // 实现添加道具
-    auto it = m_items.find(id);
-    if (it != m_items.end()) {
-        it->second += count;
-    } else {
-        m_items[id] = count;
-    }
+    if (count <= 0) return;
+    m_items[id] += count;
 }
 
 void Inventory::RemoveItem(const std::string& id, int count) {
+    if (count <= 0) return;
     auto it = m_items.find(id);
     if (it != m_items.end()) {
         it->second -= count;
@@ -33,13 +25,21 @@ int Inventory::GetItemCount(const std::string& id) const {
     return it != m_items.end() ? it->second : 0;
 }
 
-ItemPrototype* Inventory::GetItemPrototype(const std::string& id) {
-    // TODO: 从全局道具表中查找原型
-    return nullptr;
-}
-
 void Inventory::Clear() {
     m_items.clear();
 }
 
+bool Inventory::HasItem(const std::string& id, int count) const {
+    return GetItemCount(id) >= count;
+}
+
+int Inventory::GetTotalCount() const {
+    int total = 0;
+    for (const auto& pair : m_items) {
+        total += pair.second;
+    }
+    return total;
+}
+
 } // namespace RPG
+} // namespace MoLin

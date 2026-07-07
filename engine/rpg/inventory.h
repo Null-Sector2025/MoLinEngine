@@ -2,36 +2,35 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <functional>
 
-namespace MoLin::RPG {
-
-enum class ItemType { Consumable, Weapon, Armor, KeyItem, Misc };
-
-struct Item {
-    std::string id;
-    std::string name;
-    std::string description;
-    ItemType type = ItemType::Misc;
-    int maxStack = 99;
-    int buyPrice = 0;
-    int sellPrice = 0;
-    std::function<void(class Character&)> onUse;
-};
+namespace MoLin {
+namespace RPG {
 
 class Inventory {
 public:
-    void AddItem(const std::string& itemId, int count = 1);
-    bool RemoveItem(const std::string& itemId, int count = 1);
-    int GetItemCount(const std::string& itemId) const;
-    bool HasItem(const std::string& itemId, int count = 1) const;
+    Inventory() = default;
+    ~Inventory() = default;
+
+    // 添加/移除物品
+    void AddItem(const std::string& id, int count = 1);
+    void RemoveItem(const std::string& id, int count = 1);
+    int GetItemCount(const std::string& id) const;
+    
+    // 获取所有物品
+    const std::unordered_map<std::string, int>& GetItems() const { return m_items; }
+    
+    // 清空
     void Clear();
-    std::vector<std::pair<std::string, int>> GetAllItems() const;
-    static void RegisterItem(const Item& item);
-    static const Item* GetItemPrototype(const std::string& id);
+    
+    // 检查是否有物品
+    bool HasItem(const std::string& id, int count = 1) const;
+    
+    // 获取物品总数
+    int GetTotalCount() const;
+
 private:
-    std::unordered_map<std::string, int> m_Items;
-    static std::unordered_map<std::string, Item> s_ItemDB;
+    std::unordered_map<std::string, int> m_items;
 };
 
-} // namespace MoLin::RPG
+} // namespace RPG
+} // namespace MoLin
