@@ -1,5 +1,5 @@
 #pragma once
-#include "scene/scene.h"
+#include "../scene/scene.h"
 #include <SDL2/SDL.h>
 
 namespace MoLin {
