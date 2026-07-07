@@ -1,47 +1,36 @@
 #pragma once
-#include <SDL2/SDL_mixer.h>
 #include <string>
 #include <unordered_map>
-#include <cmath>
+#include <SDL2/SDL_mixer.h>
 
 namespace MoLin {
 
 class AudioManager {
 public:
-    static AudioManager& Instance();
+    AudioManager();
     ~AudioManager();
 
-    void SetMasterVolume(float volume);
-    float GetMasterVolume() const;
-
-    int PlaySound(const std::string& id, float volume = 1.0f, bool loop = false);
-    void StopSound(int channel);
-    void FadeOutChannel(int channel, int ms);
-
-    void PlayMusic(const std::string& id, bool loop = true, int fadeInMs = 0);
-    void StopMusic(int fadeOutMs = 0);
+    // 音效播放
+    void PlaySound(const std::string& name, float volume = 1.0f);
+    void PlayMusic(const std::string& name, float volume = 1.0f, bool loop = true);
+    void StopMusic();
     void PauseMusic();
     void ResumeMusic();
-    void SetMusicVolume(float volume);
-    bool IsMusicPlaying() const;
+    void SetVolume(int volume);
+    void SetMusicVolume(int volume);
+    void SetSoundVolume(int volume);
 
-    void LoadSound(const std::string& id, const std::string& path);
-    void LoadMusic(const std::string& id, const std::string& path);
-    void UnloadSound(const std::string& id);
-    void UnloadAll();
-
-    void SetListenerPosition(float x, float y);
-    void PlaySound3D(const std::string& id, float sourceX, float sourceY, float maxDistance = 500.0f);
+    // 加载音频文件
+    bool LoadSound(const std::string& name, const std::string& filepath);
+    bool LoadMusic(const std::string& name, const std::string& filepath);
 
 private:
-    AudioManager();
-    float m_MasterVolume = 1.0f;
-    float m_MusicVolume = 1.0f;
-    float m_ListenerX = 0.0f;
-    float m_ListenerY = 0.0f;
-    std::string m_CurrentMusicId;
-    std::unordered_map<std::string, Mix_Chunk*> m_Sounds;
-    std::unordered_map<std::string, Mix_Music*> m_Musics;
+    std::unordered_map<std::string, Mix_Chunk*> m_sounds;
+    std::unordered_map<std::string, Mix_Music*> m_music;
+    Mix_Music* m_currentMusic = nullptr;
+    int m_volume = 128;
+    int m_musicVolume = 128;
+    int m_soundVolume = 128;
 };
 
 } // namespace MoLin
