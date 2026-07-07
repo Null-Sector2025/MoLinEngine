@@ -7,7 +7,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(PkgConfig REQUIRED)
 
-# 宏：尝试多个包名
 macro(find_pkg PKG_PREFIX PKG_NAMES)
     set(${PKG_PREFIX}_FOUND FALSE)
     foreach(PKG ${PKG_NAMES})
@@ -37,6 +36,7 @@ list(REMOVE_ITEM ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/engine/main_entry.c
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
 target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
+    ${CMAKE_CURRENT_SOURCE_DIR}/engine/debug/imgui
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
