@@ -1,34 +1,56 @@
 #pragma once
 #include <string>
-#include <unordered_map>
 #include <vector>
-#include <memory>
 
-namespace MoLin::RPG {
+namespace MoLin {
+namespace RPG {
 
-struct Attribute {
-    int base = 0;
-    int bonus = 0;
-    int current = 0;
-    int maxBase = 9999;
-    int GetTotal() const { return base + bonus; }
-};
+class Inventory;
 
-class Skill;
 class Character {
 public:
-    Character(const std::string& name) : m_Name(name) {}
-    void AddAttribute(const std::string& key, int baseValue, int max = 9999);
-    Attribute* GetAttribute(const std::string& key);
-    void ModifyAttribute(const std::string& key, int delta);
-    void LearnSkill(std::shared_ptr<Skill> skill);
-    bool HasSkill(const std::string& name) const;
-    void UseSkill(const std::string& name, Character& target);
-    std::string m_Name;
-    int m_Level = 1;
-    int m_Exp = 0;
-    std::unordered_map<std::string, Attribute> m_Attributes;
-    std::vector<std::shared_ptr<Skill>> m_Skills;
+    Character();
+    ~Character();
+
+    // 等级
+    void SetLevel(int level);
+    int GetLevel() const;
+    void AddExp(int exp);
+
+    // HP/MP
+    int GetHp() const { return m_hp; }
+    int GetMaxHp() const { return m_maxHp; }
+    void TakeDamage(int damage);
+    void Heal(int amount);
+    
+    int GetMp() const { return m_mp; }
+    int GetMaxMp() const { return m_maxMp; }
+    void UseMp(int amount);
+    void RestoreMp(int amount);
+
+    // 属性
+    int GetAttack() const { return m_atk; }
+    int GetDefense() const { return m_def; }
+    int GetExp() const { return m_exp; }
+    int GetNextLevelExp() const { return m_nextLevelExp; }
+
+    // 位置
+    void SetPosition(float x, float y);
+    void GetPosition(float& x, float& y) const;
+
+    // 背包
+    Inventory* GetInventory();
+    const Inventory* GetInventory() const;
+
+private:
+    int m_level;
+    int m_hp, m_maxHp;
+    int m_mp, m_maxMp;
+    int m_atk, m_def;
+    int m_exp, m_nextLevelExp;
+    float m_x = 0, m_y = 0;
+    Inventory* m_inventory = nullptr;
 };
 
-} // namespace MoLin::RPG
+} // namespace RPG
+} // namespace MoLin
