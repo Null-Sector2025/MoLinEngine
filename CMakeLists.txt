@@ -26,14 +26,6 @@ if(WIN32)
     set(PLATFORM_LIBS "")
     set(PLATFORM_LIBS_EXE "")
     
-    # vcpkg 路径（显式添加）
-    set(VCPKG_ROOT "C:/vcpkg")
-    set(VCPKG_INCLUDE_DIRS 
-        ${VCPKG_ROOT}/installed/x64-windows/include
-        ${VCPKG_ROOT}/installed/x64-windows/include/SDL2
-        ${VCPKG_ROOT}/installed/x64-windows/include/lua5.4
-    )
-    
 elseif(APPLE)
     # macOS: 使用 Homebrew 的 pkg-config
     find_package(PkgConfig REQUIRED)
@@ -66,7 +58,6 @@ elseif(APPLE)
         -framework OpenAL
         -framework Cocoa
         -framework IOKit
-        -llua
     )
     set(PLATFORM_LIBS_EXE ${PLATFORM_LIBS})
     
@@ -97,7 +88,7 @@ else()
     find_pkg(SDL2_TTF "sdl2-ttf;SDL2_ttf")
     find_pkg(LUA "lua5.4;lua-5.4;lua54;lua")
     
-    set(PLATFORM_LIBS -lopenal -lGLESv2 -lEGL -lpthread -ldl -lm -llua)
+    set(PLATFORM_LIBS -lopenal -lGLESv2 -lEGL -lpthread -ldl -lm)
     set(PLATFORM_LIBS_EXE ${PLATFORM_LIBS})
 endif()
 
@@ -115,7 +106,6 @@ list(REMOVE_ITEM ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/engine/editor/edito
 
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
 
-# 包含路径
 target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${CMAKE_CURRENT_SOURCE_DIR}/engine/debug/imgui
@@ -125,10 +115,6 @@ target_include_directories(MoLinEngineObj PRIVATE
     ${SDL2_TTF_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS}
 )
-
-if(WIN32)
-    target_include_directories(MoLinEngineObj PRIVATE ${VCPKG_INCLUDE_DIRS})
-endif()
 
 # =====================================================
 # 动态库
@@ -168,6 +154,10 @@ if(APPLE)
     set_target_properties(MoLinEngine PROPERTIES
         SUFFIX ".dylib"
         INSTALL_NAME_DIR "@rpath"
+    )
+    # 添加 Homebrew 路径
+    target_include_directories(MoLinEngineObj PRIVATE
+        /opt/homebrew/include
     )
 endif()
 
