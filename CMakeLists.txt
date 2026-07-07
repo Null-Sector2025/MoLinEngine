@@ -26,6 +26,14 @@ if(WIN32)
     set(PLATFORM_LIBS "")
     set(PLATFORM_LIBS_EXE "")
     
+    # vcpkg 路径（显式添加）
+    set(VCPKG_ROOT "C:/vcpkg")
+    set(VCPKG_INCLUDE_DIRS 
+        ${VCPKG_ROOT}/installed/x64-windows/include
+        ${VCPKG_ROOT}/installed/x64-windows/include/SDL2
+        ${VCPKG_ROOT}/installed/x64-windows/include/lua5.4
+    )
+    
 elseif(APPLE)
     # macOS: 使用 Homebrew 的 pkg-config
     find_package(PkgConfig REQUIRED)
@@ -94,7 +102,7 @@ else()
 endif()
 
 # =====================================================
-# 收集所有源文件（排除 editor_main.cpp）
+# 收集所有源文件
 # =====================================================
 
 file(GLOB_RECURSE ENGINE_SOURCES "engine/*.cpp")
@@ -107,6 +115,7 @@ list(REMOVE_ITEM ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/engine/editor/edito
 
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
 
+# 包含路径
 target_include_directories(MoLinEngineObj PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/engine
     ${CMAKE_CURRENT_SOURCE_DIR}/engine/debug/imgui
@@ -117,11 +126,8 @@ target_include_directories(MoLinEngineObj PRIVATE
     ${LUA_INCLUDE_DIRS}
 )
 
-# Windows 额外包含路径（vcpkg）
 if(WIN32)
-    target_include_directories(MoLinEngineObj PRIVATE
-        C:/vcpkg/installed/x64-windows/include
-    )
+    target_include_directories(MoLinEngineObj PRIVATE ${VCPKG_INCLUDE_DIRS})
 endif()
 
 # =====================================================
