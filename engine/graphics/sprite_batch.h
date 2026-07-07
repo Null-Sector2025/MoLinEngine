@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <vector>
-#include "scene/scene.h"
+#include "../scene/scene.h"
 
 namespace MoLin {
 

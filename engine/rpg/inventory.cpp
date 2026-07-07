@@ -1,40 +1,45 @@
-#include "inventory.h"
-#include <iostream>
+#include "rpg/inventory.h"
+#include "rpg/item_prototype.h"
+#include <algorithm>
 
-namespace MoLin::RPG {
+namespace RPG {
 
-std::unordered_map<std::string, Item> Inventory::s_ItemDB;
+Inventory::Inventory() {}
 
-void Inventory::AddItem(const std::string& itemId, int count) {
-    auto proto = GetItemPrototype(itemId);
-    if (!proto) return;
-    m_Items[itemId] += count;
-    if (m_Items[itemId] > proto->maxStack) m_Items[itemId] = proto->maxStack;
-}
-bool Inventory::RemoveItem(const std::string& itemId, int count) {
-    auto it = m_Items.find(itemId);
-    if (it == m_Items.end() || it->second < count) return false;
-    it->second -= count;
-    if (it->second <= 0) m_Items.erase(it);
-    return true;
-}
-int Inventory::GetItemCount(const std::string& itemId) const {
-    auto it = m_Items.find(itemId);
-    return (it != m_Items.end()) ? it->second : 0;
-}
-bool Inventory::HasItem(const std::string& itemId, int count) const {
-    return GetItemCount(itemId) >= count;
-}
-void Inventory::Clear() { m_Items.clear(); }
-std::vector<std::pair<std::string, int>> Inventory::GetAllItems() const {
-    std::vector<std::pair<std::string, int>> items;
-    for (auto& [id, cnt] : m_Items) items.emplace_back(id, cnt);
-    return items;
-}
-void Inventory::RegisterItem(const Item& item) { s_ItemDB[item.id] = item; }
-const Item* Inventory::GetItemPrototype(const std::string& id) {
-    auto it = s_ItemDB.find(id);
-    return (it != s_ItemDB.end()) ? &it->second : nullptr;
+Inventory::~Inventory() {}
+
+void Inventory::AddItem(const std::string& id, int count) {
+    // 实现添加道具
+    auto it = m_items.find(id);
+    if (it != m_items.end()) {
+        it->second += count;
+    } else {
+        m_items[id] = count;
+    }
 }
 
-} // namespace MoLin::RPG
+void Inventory::RemoveItem(const std::string& id, int count) {
+    auto it = m_items.find(id);
+    if (it != m_items.end()) {
+        it->second -= count;
+        if (it->second <= 0) {
+            m_items.erase(it);
+        }
+    }
+}
+
+int Inventory::GetItemCount(const std::string& id) const {
+    auto it = m_items.find(id);
+    return it != m_items.end() ? it->second : 0;
+}
+
+ItemPrototype* Inventory::GetItemPrototype(const std::string& id) {
+    // TODO: 从全局道具表中查找原型
+    return nullptr;
+}
+
+void Inventory::Clear() {
+    m_items.clear();
+}
+
+} // namespace RPG

@@ -1,41 +1,55 @@
-#include "character.h"
-#include "skill.h"
-#include <iostream>
+#include "rpg/character.h"
+#include "rpg/inventory.h"
+#include <cmath>
 
-namespace MoLin::RPG {
+namespace RPG {
 
-void Character::AddAttribute(const std::string& key, int baseValue, int max) {
-    m_Attributes[key] = {baseValue, 0, baseValue, max};
+Character::Character() : m_level(1), m_hp(100), m_maxHp(100), m_mp(50), m_maxMp(50),
+    m_atk(10), m_def(5), m_exp(0), m_nextLevelExp(100) {
+    m_inventory = new Inventory();
 }
-Attribute* Character::GetAttribute(const std::string& key) {
-    auto it = m_Attributes.find(key);
-    return (it != m_Attributes.end()) ? &it->second : nullptr;
+
+Character::~Character() {
+    delete m_inventory;
 }
-void Character::ModifyAttribute(const std::string& key, int delta) {
-    auto* attr = GetAttribute(key);
-    if (attr) {
-        attr->current += delta;
-        if (attr->current > attr->GetTotal()) attr->current = attr->GetTotal();
-        if (attr->current < 0) attr->current = 0;
-    }
+
+void Character::SetLevel(int level) {
+    m_level = level;
+    // 更新属性
+    m_maxHp = 100 + level * 20;
+    m_maxMp = 50 + level * 10;
+    m_atk = 10 + level * 3;
+    m_def = 5 + level * 2;
 }
-void Character::LearnSkill(std::shared_ptr<Skill> skill) {
-    if (!HasSkill(skill->name)) m_Skills.push_back(skill);
+
+int Character::GetLevel() const {
+    return m_level;
 }
-bool Character::HasSkill(const std::string& name) const {
-    for (auto& s : m_Skills) if (s->name == name) return true;
-    return false;
-}
-void Character::UseSkill(const std::string& name, Character& target) {
-    for (auto& s : m_Skills) {
-        if (s->name == name && s->onUse) {
-            auto* mp = GetAttribute("mp");
-            if (mp && mp->current < s->mpCost) return;
-            s->onUse(*this, target);
-            if (mp) mp->current -= s->mpCost;
-            return;
-        }
+
+void Character::AddExp(int exp) {
+    m_exp += exp;
+    while (m_exp >= m_nextLevelExp) {
+        m_exp -= m_nextLevelExp;
+        SetLevel(m_level + 1);
+        m_nextLevelExp = static_cast<int>(m_nextLevelExp * 1.5);
     }
 }
 
-} // namespace MoLin::RPG
+void Character::TakeDamage(int damage) {
+    int actualDamage = std::max(0, damage - m_def);
+    m_hp = std::max(0, m_hp - actualDamage);
+}
+
+void Character::Heal(int amount) {
+    m_hp = std::min(m_maxHp, m_hp + amount);
+}
+
+void Character::UseMp(int amount) {
+    m_mp = std::max(0, m_mp - amount);
+}
+
+void Character::RestoreMp(int amount) {
+    m_mp = std::min(m_maxMp, m_mp + amount);
+}
+
+} // namespace RPG

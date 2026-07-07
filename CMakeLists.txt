@@ -10,7 +10,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # =====================================================
 
 if(WIN32)
-    # Windows: 使用 vcpkg 提供的 CMake 包（不依赖 pkg-config）
+    # Windows: 使用 vcpkg 提供的 CMake 包
     find_package(SDL2 CONFIG REQUIRED)
     find_package(SDL2_image CONFIG REQUIRED)
     find_package(SDL2_mixer CONFIG REQUIRED)
@@ -53,17 +53,17 @@ elseif(APPLE)
     find_pkg(SDL2_TTF "sdl2-ttf;SDL2_ttf")
     find_pkg(LUA "lua5.4;lua-5.4;lua54;lua")
     
-    # macOS 特殊链接（框架 + 库）
     set(PLATFORM_LIBS 
         -framework OpenGL
         -framework OpenAL
         -framework Cocoa
         -framework IOKit
+        -llua
     )
     set(PLATFORM_LIBS_EXE ${PLATFORM_LIBS})
     
 else()
-    # Linux / Unix: 使用 pkg-config
+    # Linux / Unix
     find_package(PkgConfig REQUIRED)
     
     macro(find_pkg PKG_PREFIX PKG_NAMES)
@@ -89,21 +89,20 @@ else()
     find_pkg(SDL2_TTF "sdl2-ttf;SDL2_ttf")
     find_pkg(LUA "lua5.4;lua-5.4;lua54;lua")
     
-    # Linux 系统库
-    set(PLATFORM_LIBS -lopenal -lGLESv2 -lEGL -lpthread -ldl -lm)
+    set(PLATFORM_LIBS -lopenal -lGLESv2 -lEGL -lpthread -ldl -lm -llua)
     set(PLATFORM_LIBS_EXE ${PLATFORM_LIBS})
 endif()
 
 # =====================================================
-# 收集所有源文件
+# 收集所有源文件（排除 editor_main.cpp）
 # =====================================================
 
 file(GLOB_RECURSE ENGINE_SOURCES "engine/*.cpp")
-# 排除 main_entry.cpp（独立可执行文件）
 list(REMOVE_ITEM ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/engine/main_entry.cpp")
+list(REMOVE_ITEM ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/engine/editor/editor_main.cpp")
 
 # =====================================================
-# 核心库（对象库，避免重复编译）
+# 对象库
 # =====================================================
 
 add_library(MoLinEngineObj OBJECT ${ENGINE_SOURCES})
@@ -118,8 +117,15 @@ target_include_directories(MoLinEngineObj PRIVATE
     ${LUA_INCLUDE_DIRS}
 )
 
+# Windows 额外包含路径（vcpkg）
+if(WIN32)
+    target_include_directories(MoLinEngineObj PRIVATE
+        C:/vcpkg/installed/x64-windows/include
+    )
+endif()
+
 # =====================================================
-# 动态库（共享库）
+# 动态库
 # =====================================================
 
 add_library(MoLinEngine SHARED $<TARGET_OBJECTS:MoLinEngineObj>)
@@ -133,14 +139,8 @@ target_link_libraries(MoLinEngine
     ${PLATFORM_LIBS}
 )
 
-# 设置动态库版本号
-set_target_properties(MoLinEngine PROPERTIES
-    VERSION 1.3.0
-    SOVERSION 1
-)
-
 # =====================================================
-# 可执行文件（包含 main_entry.cpp）
+# 可执行文件
 # =====================================================
 
 add_executable(MoLinEngineExe engine/main_entry.cpp $<TARGET_OBJECTS:MoLinEngineObj>)
@@ -155,7 +155,7 @@ target_link_libraries(MoLinEngineExe
 )
 
 # =====================================================
-# macOS 特殊：设置动态库后缀和安装路径
+# macOS 特殊设置
 # =====================================================
 
 if(APPLE)
@@ -166,7 +166,7 @@ if(APPLE)
 endif()
 
 # =====================================================
-# 安装配置
+# 安装
 # =====================================================
 
 install(TARGETS MoLinEngine MoLinEngineExe
@@ -179,15 +179,3 @@ install(DIRECTORY engine/ DESTINATION include/MoLinEngine
     FILES_MATCHING PATTERN "*.h"
     PATTERN "debug/imgui/*.cpp" EXCLUDE
 )
-
-# =====================================================
-# 打印配置信息（便于调试）
-# =====================================================
-
-message(STATUS "========================================")
-message(STATUS "MoLinEngine 配置完成")
-message(STATUS "平台: ${CMAKE_SYSTEM_NAME}")
-message(STATUS "C++ 标准: C++${CMAKE_CXX_STANDARD}")
-message(STATUS "SDL2: ${SDL2_LIBRARIES}")
-message(STATUS "Lua: ${LUA_LIBRARIES}")
-message(STATUS "========================================")

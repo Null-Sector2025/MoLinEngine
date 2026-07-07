@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 #include "core/engine.h"
 #include "graphics/sprite.h"
-#include "scene/scene.h"
+#include "../scene/scene.h"
 #include "audio/audio_manager.h"
 #include <iostream>
 #include <memory>

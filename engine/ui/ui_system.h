@@ -1,5 +1,5 @@
 #pragma once
-#include "scene/scene.h"
+#include "../scene/scene.h"
 #include "graphics/text_renderer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
