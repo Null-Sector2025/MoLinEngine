@@ -1,36 +1,34 @@
-#define SDL_MAIN_HANDLED
-#include "core/engine.h"
-#include "graphics/sprite.h"
-#include "../scene/scene.h"
-#include "audio/audio_manager.h"
 #include <iostream>
-#include <memory>
+#include "core/engine.h"
+#include "game/game_state.h"
 
-int main(int argc, char* argv[]) {
-    std::cout << "墨麟引擎 v1.2.0 启动中..." << std::endl;
-
+int main() {
+    std::cout << "MoLinEngine 启动中..." << std::endl;
+    
     MoLin::Engine engine;
     MoLin::WindowConfig config;
-    config.title = "墨麟引擎 - MoLin Engine";
-    config.width = 1280;
-    config.height = 720;
+    config.title = "MoLinEngine Demo";
+    config.width = 800;
+    config.height = 600;
     config.vsync = true;
-
+    
     if (!engine.Initialize(config)) {
         std::cerr << "引擎初始化失败！" << std::endl;
         return -1;
     }
-
-    auto scene = std::make_unique<MoLin::Scene>();
-
-    engine.SetUpdateCallback([&](float dt) {
-        scene->Update(dt);
+    
+    // 注册回调
+    engine.SetUpdateCallback([](float dt) {
+        // 更新逻辑
     });
-
-    engine.SetRenderCallback([&](SDL_Renderer* renderer) {
-        scene->Render(renderer);
+    
+    engine.SetRenderCallback([]() {
+        // 渲染逻辑
     });
-
+    
+    std::cout << "引擎启动成功，进入主循环..." << std::endl;
     engine.Run();
+    engine.Shutdown();
+    
     return 0;
 }
