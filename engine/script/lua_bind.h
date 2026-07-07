@@ -1,24 +1,20 @@
 #pragma once
-#include <string>
 
 extern "C" {
 #include <lua.h>
-#include <lualib.h>
 #include <lauxlib.h>
+#include <lualib.h>
 }
 
 namespace MoLin {
+namespace Script {
 
-class LuaBind {
-public:
-    LuaBind();
-    ~LuaBind();
-    bool DoFile(const std::string& filename);
-    bool DoString(const std::string& code);
-    lua_State* GetState() { return L; }
-    void RegisterCoreFunctions();
-private:
-    lua_State* L = nullptr;
-};
+// Lua 绑定初始化
+bool InitLua(lua_State* L);
+void CloseLua(lua_State* L);
 
+// 注册所有 C++ 函数到 Lua
+void RegisterAllBindings(lua_State* L);
+
+} // namespace Script
 } // namespace MoLin

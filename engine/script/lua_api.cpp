@@ -5,10 +5,12 @@
 #include <iostream>
 
 extern "C" {
-#include <lua5.4/lua.h>
-#include <lua5.4/lauxlib.h>
-#include <lua5.4/lualib.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 }
+
+using namespace MoLin;
 
 // === Lua API 函数实现 ===
 
@@ -16,9 +18,10 @@ int Lua_UseItem(lua_State* L) {
     const char* itemId = luaL_checkstring(L, 1);
     int count = luaL_optinteger(L, 2, 1);
     
-    auto& player = MoLin::GameState::Instance().GetPlayer();
+    auto& state = GameState::Instance();
+    auto& player = state.GetPlayer();
     auto* inv = player.GetInventory();
-    if (inv->GetItemCount(itemId) >= count) {
+    if (inv && inv->HasItem(itemId, count)) {
         inv->RemoveItem(itemId, count);
         lua_pushboolean(L, 1);
     } else {
@@ -28,8 +31,10 @@ int Lua_UseItem(lua_State* L) {
 }
 
 int Lua_GetPlayerInfo(lua_State* L) {
-    auto& player = MoLin::GameState::Instance().GetPlayer();
+    auto& state = GameState::Instance();
+    auto& player = state.GetPlayer();
     lua_createtable(L, 0, 5);
+    
     lua_pushstring(L, "level");
     lua_pushinteger(L, player.GetLevel());
     lua_settable(L, -3);
@@ -56,21 +61,26 @@ int Lua_GetPlayerInfo(lua_State* L) {
 int Lua_SetPlayerPosition(lua_State* L) {
     float x = static_cast<float>(luaL_checknumber(L, 1));
     float y = static_cast<float>(luaL_checknumber(L, 2));
-    auto& player = MoLin::GameState::Instance().GetPlayer();
+    auto& state = GameState::Instance();
+    auto& player = state.GetPlayer();
     player.SetPosition(x, y);
     return 0;
 }
 
 int Lua_LoadMap(lua_State* L) {
     const char* mapName = luaL_checkstring(L, 1);
-    // TODO: 实现地图加载
     std::cout << "加载地图: " << mapName << std::endl;
     return 0;
 }
 
 int Lua_GetInventory(lua_State* L) {
-    auto& player = MoLin::GameState::Instance().GetPlayer();
+    auto& state = GameState::Instance();
+    auto& player = state.GetPlayer();
     auto* inv = player.GetInventory();
+    if (!inv) {
+        lua_newtable(L);
+        return 1;
+    }
     lua_newtable(L);
     int index = 1;
     for (const auto& pair : inv->GetItems()) {
