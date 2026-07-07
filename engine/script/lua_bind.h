@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 extern "C" {
 #include <lua.h>
@@ -9,12 +10,20 @@ extern "C" {
 namespace MoLin {
 namespace Script {
 
-// Lua 绑定初始化
-bool InitLua(lua_State* L);
-void CloseLua(lua_State* L);
+class LuaBind {
+public:
+    LuaBind();
+    ~LuaBind();
 
-// 注册所有 C++ 函数到 Lua
-void RegisterAllBindings(lua_State* L);
+    bool DoFile(const std::string& filename);
+    bool DoString(const std::string& code);
+    void RegisterCoreFunctions();
+
+    lua_State* GetState() { return L; }
+
+private:
+    lua_State* L;
+};
 
 } // namespace Script
 } // namespace MoLin
