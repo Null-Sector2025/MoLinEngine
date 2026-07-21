@@ -1,5 +1,5 @@
 #pragma once
-#include "rpg/character.h"
+#include "../rpg/character.h"
 #include <string>
 #include <unordered_map>
 
@@ -9,15 +9,12 @@ class GameState {
 public:
     static GameState& Instance();
     
-    // 玩家
     RPG::Character& GetPlayer() { return m_player; }
     const RPG::Character& GetPlayer() const { return m_player; }
     
-    // 全局标记
     void SetFlag(const std::string& key, bool value);
     bool GetFlag(const std::string& key) const;
     
-    // 存档
     bool Save(int slot);
     bool Load(int slot);
     
