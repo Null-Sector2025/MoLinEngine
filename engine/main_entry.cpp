@@ -17,14 +17,8 @@ int main() {
         return -1;
     }
     
-    // 注册回调
-    engine.SetUpdateCallback([](float dt) {
-        // 更新逻辑
-    });
-    
-    engine.SetRenderCallback([]() {
-        // 渲染逻辑
-    });
+    engine.SetUpdateCallback([](float dt) {});
+    engine.SetRenderCallback([]() {});
     
     std::cout << "引擎启动成功，进入主循环..." << std::endl;
     engine.Run();
