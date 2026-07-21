@@ -15,14 +15,16 @@ if(WIN32)
     find_package(SDL2_image CONFIG REQUIRED)
     find_package(SDL2_mixer CONFIG REQUIRED)
     find_package(SDL2_ttf CONFIG REQUIRED)
-    find_package(Lua REQUIRED)
-    
+    # 查找 Lua（vcpkg 提供）
+    find_package(lua REQUIRED)  # 注意是小写 lua
+    # 或者使用 find_package(Lua REQUIRED) 但需要指定组件
+    # 这里改用 lua 目标
     set(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIR})
     set(SDL2_LIBRARIES SDL2::SDL2)
     set(SDL2_IMAGE_LIBRARIES SDL2_image::SDL2_image)
     set(SDL2_MIXER_LIBRARIES SDL2_mixer::SDL2_mixer)
     set(SDL2_TTF_LIBRARIES SDL2_ttf::SDL2_ttf)
-    set(LUA_LIBRARIES Lua::Lua)
+    set(LUA_LIBRARIES lua)  # 使用 lua 库名
     set(PLATFORM_LIBS "")
     set(PLATFORM_LIBS_EXE "")
     
@@ -155,7 +157,7 @@ if(APPLE)
         SUFFIX ".dylib"
         INSTALL_NAME_DIR "@rpath"
     )
-    # 添加 Homebrew 路径
+    # 添加 Homebrew 包含路径
     target_include_directories(MoLinEngineObj PRIVATE
         /opt/homebrew/include
     )
